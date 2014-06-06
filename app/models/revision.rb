@@ -3,7 +3,9 @@ class Revision < ActiveRecord::Base
   has_many :revision_tags, inverse_of: :revision
   belongs_to :tiddler, inverse_of: :revisions
 
-  validates_presence_of :title, :tiddler, :content_type
+  validates_presence_of :title, :tiddler
+
+  before_save :set_defaults
 
   alias_method :tags, :revision_tags
   alias_method :fields, :revision_fields
@@ -21,4 +23,11 @@ class Revision < ActiveRecord::Base
     new_fields.each {|k, v| fields.build key: k, value: v }
     new_fields
   end
+
+  protected
+
+  def set_defaults
+    self.content_type ||= 'text/x-markdown'
+  end
+
 end
