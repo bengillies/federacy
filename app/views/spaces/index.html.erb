@@ -1,0 +1,21 @@
+<% content_for :title do %>
+  All Spaces - Federacy
+<% end %>
+
+<% content_for :nav do %>
+  <%= link_to "New Space", new_space_path %>
+<% end %>
+
+<main>
+  <h1>All Spaces</h1>
+
+  <ul class="spaces">
+    <% @spaces.each do |space| %>
+      <li class="space">
+        <%= link_to space do %>
+          <%= space.name %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</main>

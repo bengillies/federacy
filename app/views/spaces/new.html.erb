@@ -1,0 +1,13 @@
+<% content_for :title do %>
+  New Space - Federacy
+<% end %>
+
+<main>
+  <h1>New Space</h1>
+
+  <%= form_for @space, url: { action: "create" } do |f| %>
+    <%= f.text_field :name %>
+    <%= f.text_area :description %>
+    <%= f.submit "Create" %>
+  <% end %>
+</main>

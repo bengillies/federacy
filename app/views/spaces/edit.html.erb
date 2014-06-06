@@ -1,0 +1,20 @@
+<% content_for :title do %>
+  Edit <%= @space.name %> space - Federacy
+<% end %>
+
+<% content_for :nav do %>
+  <%= form_for @space, url: { action: "destroy" }, method: :delete do |f| %>
+    <%= f.submit "Delete" %>
+  <% end %>
+<% end %>
+
+<main>
+  <h1>Edit Space</h1>
+
+  <%= form_for @space, url: { action: "update" } do |f| %>
+    <%= f.text_field :name %>
+    <%= f.text_area :description %>
+    <%= f.submit "Save" %>
+  <% end %>
+</main>
+

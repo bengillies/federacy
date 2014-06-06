@@ -1,0 +1,20 @@
+<% content_for :title do %>
+  <%= @space.name %> -  Spaces - Federacy
+<% end %>
+
+<% content_for :nav do %>
+  <%= link_to "Edit Space", edit_space_path %>
+<% end %>
+
+<main>
+  <article class="space">
+    <header>
+      <h1><%= @space.name %></h1>
+    </header>
+
+    <section>
+      <%= markdown @space.description %>
+    </section>
+  </article>
+</main>
+
