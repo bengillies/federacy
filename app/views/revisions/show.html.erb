@@ -2,6 +2,16 @@
   <%= @revision.title %> - <%= @revision.tiddler.title %> - <%= @revision.tiddler.space %> - Federacy
 <% end %>
 
+<% content_for :nav do %>
+  <%= form_tag space_tiddler_path(id: @revision.tiddler), method: :put do %>
+    <%= hidden_field_tag "tiddler[title]", @revision.title %>
+    <%= hidden_field_tag "tiddler[text]", @revision.text %>
+    <%= hidden_field_tag "tiddler[content_type]", @revision.content_type %>
+    <%= hidden_field_tag "tiddler[tags]", @revision.tags %>
+    <%= submit_tag "Revert" %>
+  <% end %>
+<% end %>
+
 <main>
   <article class="revision">
     <header>
