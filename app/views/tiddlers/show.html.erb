@@ -1,5 +1,5 @@
 <% content_for :title do %>
-  <%= @tiddler.title %> - <%= @tiddler.space.name %> - Federacy
+  <%= @tiddler.title %> - <%= @tiddler.space %> - Federacy
 <% end %>
 
 <% content_for :nav do %>
@@ -18,7 +18,7 @@
     </section>
 
     <footer>
-    <p>Created on <%= @tiddler.created.strftime '%d %B %Y at %H:%M' %>, Last updated <%= time_ago_in_words @tiddler.modified %> ago.</p>
+    <p>Created on <%= link_to space_tiddler_revisions_path tiddler_id: @tiddler do %><%= @tiddler.created.strftime '%d %B %Y at %H:%M' %><% end %>, Last updated <%= time_ago_in_words @tiddler.modified %> ago.</p>
       <ul class="tags">
         <% @tiddler.tags.each do |tag| %>
           <li class="tag"><%= tag %></li>

@@ -1,0 +1,26 @@
+<% content_for :title do %>
+  <%= @revision.title %> - <%= @revision.tiddler.title %> - <%= @revision.tiddler.space %> - Federacy
+<% end %>
+
+<main>
+  <article class="revision">
+    <header>
+      <h1><%= @revision.title %></h1>
+    </header>
+
+    <section>
+      <%= render_tiddler @revision, content_type: @revision.content_type %>
+    </section>
+
+    <footer>
+    <p>Created on <%= @revision.created_at.strftime '%d %B %Y at %H:%M' %>.</p>
+      <ul class="tags">
+        <% @revision.tags.each do |tag| %>
+          <li class="tag"><%= tag %></li>
+        <% end %>
+      </ul>
+    </footer>
+  </article>
+</main>
+
+

@@ -1,0 +1,19 @@
+<% content_for :title do %>
+  All Revisions - <%= @revisions.first.title %> - <%= @revisions.first.tiddler.space %> - Federacy
+<% end %>
+
+<main>
+  <h1>All Revisions for <%= @revisions.first.title %></h1>
+
+  <ul class="revisions">
+    <% @revisions.each do |revision| %>
+      <li class="revision">
+        <%= link_to [revision.tiddler.space, revision.tiddler, revision] do %>
+          <%= revision.title %><% end %>
+        [<em><%= revision.created_at.strftime "%H:%M %d %B %Y" %></em>]
+      </li>
+    <% end %>
+  </ul>
+</main>
+
+
