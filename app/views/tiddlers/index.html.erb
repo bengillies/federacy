@@ -1,0 +1,22 @@
+<% content_for :title do %>
+  All Tiddlers - <%= @tiddlers.first.space.name %> - Federacy
+<% end %>
+
+<% content_for :nav do %>
+  <%= link_to "New Tiddler", new_space_tiddler_path %>
+<% end %>
+
+<main>
+  <h1>All Tiddlers</h1>
+
+  <ul class="tiddlers">
+    <% @tiddlers.each do |tiddler| %>
+      <li class="tiddler">
+        <%= link_to [tiddler.space, tiddler] do %>
+          <%= tiddler.title %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</main>
+

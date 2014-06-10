@@ -1,0 +1,30 @@
+<% content_for :title do %>
+  <%= @tiddler.title %> - <%= @tiddler.space.name %> - Federacy
+<% end %>
+
+<% content_for :nav do %>
+  <%= link_to "New Tiddler", new_space_tiddler_path %>
+  <%= link_to "Edit Tiddler", edit_space_tiddler_path %>
+<% end %>
+
+<main>
+  <article class="tiddler">
+    <header>
+      <h1><%= @tiddler.title %></h1>
+    </header>
+
+    <section>
+      <%= render_tiddler @tiddler, content_type: @tiddler.content_type %>
+    </section>
+
+    <footer>
+    <p>Created on <%= @tiddler.created.strftime '%d %B %Y at %H:%M' %>, Last updated <%= time_ago_in_words @tiddler.modified %> ago.</p>
+      <ul class="tags">
+        <% @tiddler.tags.each do |tag| %>
+          <li class="tag"><%= tag %></li>
+        <% end %>
+      </ul>
+    </footer>
+  </article>
+</main>
+

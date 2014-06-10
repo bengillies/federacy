@@ -1,0 +1,22 @@
+<% content_for :title do %>
+  Edit <%= @tiddler.title %> - <%= @tiddler.space %> - Federacy
+<% end %>
+
+<% content_for :nav do %>
+  <%= link_to "New Tiddler", new_space_tiddler_path %>
+  <%= form_for @tiddler, url: { action: "destroy" }, method: :delete do |f| %>
+    <%= f.submit "Delete" %>
+  <% end %>
+<% end %>
+
+<main>
+  <h1>Edit Tiddler</h1>
+
+  <%= form_for @tiddler, url: { action: "update" } do |f| %>
+    <%= f.text_field :title %>
+    <%= f.text_area :text %>
+    <%= f.text_field :tags %>
+    <%= f.text_field :content_type %>
+    <%= f.submit "Save" %>
+  <% end %>
+</main>

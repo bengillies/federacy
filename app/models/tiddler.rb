@@ -1,5 +1,5 @@
 class Tiddler < ActiveRecord::Base
-  has_many :revisions, ->{ order "created_at DESC" }, inverse_of: :tiddler
+  has_many :revisions, ->{ order "created_at DESC" }, inverse_of: :tiddler, dependent: :destroy
   belongs_to :space, inverse_of: :tiddlers
 
   validates_presence_of :space
@@ -11,7 +11,7 @@ class Tiddler < ActiveRecord::Base
   end
 
   def current_revision
-    revisions.first
+    revisions.first || Revision.new
   end
 
   def created
@@ -23,24 +23,28 @@ class Tiddler < ActiveRecord::Base
   end
 
   def new_revision attrs
-    revision = {
-      fields: Hash[fields.pluck(:key, :value)],
-      tags: tags.map(&:name),
-      title: title,
-      text: text,
-      content_type: content_type,
-    }.merge(attrs)
+    default_params = {
+      "fields" => fields,
+      "tags" => tags.map(&:name),
+      "title" => title,
+      "text" => text,
+      "content_type" => content_type,
+    }
 
-    new_fields = revision[:fields]
-    new_tags = revision[:tags]
+    revision = default_params.merge(attrs)
 
-    revision.delete :tags
-    revision.delete :fields
+    new_fields = revision["fields"]
+    new_tags = revision["tags"]
+
+    revision.delete "tags"
+    revision.delete "fields"
+
+    Rails.logger.info "revision is: #{revision.inspect}"
 
     revision = revisions.build revision
 
-    revision.add_tags new_tags
-    revision.add_fields new_fields
+    revision.add_tags(new_tags) if new_tags
+    revision.add_fields(new_fields) if new_fields
 
     revision
   end

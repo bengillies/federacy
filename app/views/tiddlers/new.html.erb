@@ -1,0 +1,16 @@
+<% content_for :title do %>
+  New Tiddler - <%= @tiddler.space %> - Federacy
+<% end %>
+
+<main>
+  <h1>New Tiddler</h1>
+
+  <%= form_for @tiddler, url: { action: "create" } do |f| %>
+    <%= f.text_field :title %>
+    <%= f.text_area :text %>
+    <%= f.text_field :tags %>
+    <%= f.text_field :content_type %>
+    <%= f.submit "Create" %>
+  <% end %>
+</main>
+
