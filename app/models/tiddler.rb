@@ -23,29 +23,9 @@ class Tiddler < ActiveRecord::Base
   end
 
   def new_revision attrs
-    default_params = {
-      "fields" => fields,
-      "tags" => tags.map(&:name),
-      "title" => title,
-      "text" => text,
-      "content_type" => content_type,
-    }
-
-    revision = default_params.merge(attrs)
-
-    new_fields = revision["fields"]
-    new_tags = revision["tags"]
-
-    revision.delete "tags"
-    revision.delete "fields"
-
-    Rails.logger.info "revision is: #{revision.inspect}"
-
-    revision = revisions.build revision
-
-    revision.add_tags(new_tags) if new_tags
-    revision.add_fields(new_fields) if new_fields
-
+    revision = revisions.build attrs.except "tags", "fields"
+    revision.add_tags attrs["tags"] if attrs.has_key? "tags"
+    revision.add_fields attrs["fields"] if attrs.has_key? "fields"
     revision
   end
 end

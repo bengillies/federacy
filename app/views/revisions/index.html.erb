@@ -1,9 +1,9 @@
 <% content_for :title do %>
-  All Revisions - <%= @revisions.first.title %> - <%= @revisions.first.tiddler.space %> - Federacy
+  All Revisions - <%= @tiddler.title %> - <%= @space %> - Federacy
 <% end %>
 
 <main>
-  <h1>All Revisions for <%= @revisions.first.title %></h1>
+  <h1>All Revisions for <%= @tiddler.title %></h1>
 
   <ul class="revisions">
     <% @revisions.each do |revision| %>

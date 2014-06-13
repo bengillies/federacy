@@ -27,7 +27,6 @@ class SpacesController < ApplicationController
     if @space.save
       redirect_to @space
     else
-      flash[:error] = "There was an error saving"
       redirect_to edit_space_path
     end
   end
@@ -38,7 +37,6 @@ class SpacesController < ApplicationController
     if @space.save
       redirect_to @space
     else
-      flash[:error] = "There was an error saving"
       redirect_to new_space_path
     end
   end
@@ -49,7 +47,6 @@ class SpacesController < ApplicationController
     if @space.destroy
       redirect_to spaces_path
     else
-      flash[:error] = "There was an error deleting"
       redirect_to edit_space_path
     end
   end
