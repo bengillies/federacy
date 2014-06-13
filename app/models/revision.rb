@@ -2,10 +2,13 @@ class Revision < ActiveRecord::Base
   has_many :revision_fields, inverse_of: :revision, dependent: :delete_all
   has_many :revision_tags, inverse_of: :revision, dependent: :delete_all
   belongs_to :tiddler, inverse_of: :revisions
-
-  validates_presence_of :title, :tiddler
+  belongs_to :textable, polymorphic: true
 
   before_save :set_defaults
+
+  def text
+    if textable.respond_to?:text then textable.text else nil end
+  end
 
   def tags
     @tags ||= TagList.new revision_tags
@@ -37,6 +40,6 @@ class Revision < ActiveRecord::Base
 
   def set_defaults
     self.content_type ||= 'text/x-markdown'
+    self.tiddler_id ||= textable.tiddler_id
   end
-
 end

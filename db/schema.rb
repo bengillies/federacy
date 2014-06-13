@@ -11,10 +11,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140605141626) do
+ActiveRecord::Schema.define(version: 20140613132759) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "file_revisions", force: true do |t|
+    t.string  "file_path"
+    t.integer "tiddler_id"
+  end
 
   create_table "revision_fields", force: true do |t|
     t.string   "key"
@@ -33,11 +38,12 @@ ActiveRecord::Schema.define(version: 20140605141626) do
 
   create_table "revisions", force: true do |t|
     t.string   "title"
-    t.text     "text"
     t.integer  "tiddler_id"
     t.string   "content_type"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "textable_id"
+    t.string   "textable_type"
   end
 
   create_table "spaces", force: true do |t|
@@ -45,6 +51,11 @@ ActiveRecord::Schema.define(version: 20140605141626) do
     t.text     "description"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "text_revisions", force: true do |t|
+    t.string  "text"
+    t.integer "tiddler_id"
   end
 
   create_table "tiddlers", force: true do |t|
