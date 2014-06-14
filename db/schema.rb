@@ -17,7 +17,8 @@ ActiveRecord::Schema.define(version: 20140613132759) do
   enable_extension "plpgsql"
 
   create_table "file_revisions", force: true do |t|
-    t.string  "file_path"
+    t.string  "file"
+    t.string  "content_type"
     t.integer "tiddler_id"
   end
 
@@ -39,7 +40,6 @@ ActiveRecord::Schema.define(version: 20140613132759) do
   create_table "revisions", force: true do |t|
     t.string   "title"
     t.integer  "tiddler_id"
-    t.string   "content_type"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "textable_id"
@@ -55,6 +55,7 @@ ActiveRecord::Schema.define(version: 20140613132759) do
 
   create_table "text_revisions", force: true do |t|
     t.string  "text"
+    t.string  "content_type"
     t.integer "tiddler_id"
   end
 

@@ -7,8 +7,26 @@ module ApplicationHelper
   def render_tiddler tiddler, options
     content_type = options[:content_type]
 
-    mime_type = Mime::Type.lookup(content_type) || Mime[:text]
+    types = {
+      /^text\/x-markdown/ => :markdown,
+      /^text\/plain/ => :text,
+      /^image\// => :image
+    }
 
-    render "shared/renderers/#{mime_type.symbol}", object: tiddler
+    mime_type = types.find {|regex, val| regex.match content_type }
+    renderer = if mime_type
+      mime_type.last
+    else
+      if tiddler.binary?
+        :binary
+      else
+        :text
+      end
+    end
+
+    render "shared/renderers/#{renderer}", object: tiddler
   end
+
+  private
+
 end

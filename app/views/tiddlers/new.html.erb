@@ -2,12 +2,18 @@
   New Tiddler - <%= @space %> - Federacy
 <% end %>
 
+<div><%= flash[:errors] %></div>
+
 <main>
   <h1>New Tiddler</h1>
 
   <%= form_for @tiddler, url: { action: "create" } do |f| %>
     <%= f.text_field :title %>
-    <%= f.text_area :text %>
+    <% if params[:type] == 'file' %>
+      <%= f.file_field :file %>
+    <% else %>
+      <%= f.text_area :text %>
+    <% end %>
     <%= f.text_field :tags %>
     <%= f.text_field :content_type %>
     <%= f.submit "Create" %>

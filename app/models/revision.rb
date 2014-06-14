@@ -6,8 +6,13 @@ class Revision < ActiveRecord::Base
 
   before_save :set_defaults
 
+
   def text
-    if textable.respond_to?:text then textable.text else nil end
+    if textable.respond_to? :text then textable.text else nil end
+  end
+
+  def content_type
+    if textable.respond_to? :content_type then textable.content_type else nil end
   end
 
   def tags
@@ -32,6 +37,10 @@ class Revision < ActiveRecord::Base
     new_fields
   end
 
+  def binary?
+    textable_type == "FileRevision"
+  end
+
   def read_only?
     new_record? ? false : true
   end
@@ -39,7 +48,6 @@ class Revision < ActiveRecord::Base
   protected
 
   def set_defaults
-    self.content_type ||= 'text/x-markdown'
     self.tiddler_id ||= textable.tiddler_id
   end
 end

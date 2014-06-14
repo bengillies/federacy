@@ -14,7 +14,11 @@
 
   <%= form_for @tiddler, url: { action: "update" } do |f| %>
     <%= f.text_field :title %>
-    <%= f.text_area :text %>
+    <% if @tiddler.binary? %>
+      <%= f.file_field :file %>
+    <% else %>
+      <%= f.text_area :text %>
+    <% end %>
     <%= f.text_field :tags %>
     <%= f.text_field :content_type %>
     <%= f.submit "Save" %>

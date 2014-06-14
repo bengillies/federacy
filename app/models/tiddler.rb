@@ -6,11 +6,7 @@ class Tiddler < ActiveRecord::Base
 
   validates_presence_of :space
 
-  %w(title text content_type tags fields).each do |k|
-    define_method k do
-      current_revision.send k
-    end
-  end
+  delegate :title, :text, :content_type, :tags, :fields, :binary?, to: :current_revision
 
   def current_revision
     revisions.first || Revision.new
@@ -25,10 +21,13 @@ class Tiddler < ActiveRecord::Base
   end
 
   def new_revision attrs
-    revision_body = revision_type(attrs).build text: attrs["text"]
-    revision = revision_body.revisions.build attrs.except "tags", "fields", "text"
+    revision_body = revision_type(attrs).build
+    revision_body.set_body! attrs
+
+    revision = revision_body.revisions.build title: attrs["title"]
     revision.add_tags attrs["tags"] if attrs.has_key? "tags"
     revision.add_fields attrs["fields"] if attrs.has_key? "fields"
+
     revision
   end
 

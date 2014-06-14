@@ -60,6 +60,6 @@ class TiddlersController < ApplicationController
   end
 
   def tiddler_params
-    params.require(:tiddler).permit(:title, :text, :tags, :fields, :content_type)
+    params.require(:tiddler).permit(:title, :text, :file, :tags, :fields, :content_type)
   end
 end
