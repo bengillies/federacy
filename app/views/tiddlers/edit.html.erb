@@ -14,7 +14,7 @@
 
   <%= form_for @tiddler, url: { action: "update" } do |f| %>
     <%= f.text_field :title %>
-    <% if @tiddler.binary? %>
+    <% if params["type"] == "file" or (!params["type"] &&  @tiddler.binary?) %>
       <%= f.file_field :file %>
     <% else %>
       <%= f.text_area :text %>

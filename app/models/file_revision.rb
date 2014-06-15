@@ -12,6 +12,10 @@ class FileRevision < ActiveRecord::Base
     file.url
   end
 
+  def body
+    file
+  end
+
   def set_body! attrs
     self.file = attrs["file"]
     self.content_type = attrs["content_type"]

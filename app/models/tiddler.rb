@@ -31,9 +31,28 @@ class Tiddler < ActiveRecord::Base
     revision
   end
 
+  def new_revision_from_previous previous_revision_id, attrs = {}
+    revision = revisions.find previous_revision_id
+
+    new_attrs = {
+      "title" => revision.title,
+      "tags" => revision.tags.to_s,
+      "fields" => revision.fields,
+      "content_type" => revision.content_type,
+    }.merge(attrs)
+
+    if revision.binary?
+      new_attrs["file"] ||= revision.body
+    else
+      new_attrs["text"] ||= revision.body
+    end
+
+    new_revision new_attrs
+  end
+
   private
 
   def revision_type attrs
-    if attrs.has_key? "file" then file_revisions else text_revisions end
+    if attrs.has_key?("file") then file_revisions else text_revisions end
   end
 end

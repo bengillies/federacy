@@ -6,6 +6,10 @@ class TextRevision < ActiveRecord::Base
 
   validates_presence_of :tiddler
 
+  def body
+    text
+  end
+
   def set_body! attrs
     self.text = attrs.fetch("text", nil)
     self.content_type = attrs.fetch('content_type', nil)

@@ -6,6 +6,9 @@ class Revision < ActiveRecord::Base
 
   before_save :set_defaults
 
+  def body
+      if textable.respond_to? :body then textable.body else nil end
+  end
 
   def text
     if textable.respond_to? :text then textable.text else nil end
