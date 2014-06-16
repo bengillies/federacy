@@ -6,7 +6,7 @@ class Tiddler < ActiveRecord::Base
 
   validates_presence_of :space
 
-  delegate :title, :text, :content_type, :tags, :fields, :binary?, to: :current_revision
+  delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, to: :current_revision
 
   def current_revision
     revisions.first || Revision.new

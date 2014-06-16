@@ -3,6 +3,8 @@ class TiddlersController < ApplicationController
 
   before_action :find_space
 
+  self.responder = TiddlerResponder
+
   def index
     @tiddlers = @space.tiddlers.all
     respond_with @tiddlers
@@ -26,7 +28,7 @@ class TiddlersController < ApplicationController
     @tiddler.new_revision tiddler_params
 
     if @tiddler.save
-      redirect_to space_tiddler_path id: @tiddler
+      redirect_to space_tiddler_path id: @tiddler, format: :html
     else
       redirect_to new_space_tiddler_path
     end
@@ -37,7 +39,7 @@ class TiddlersController < ApplicationController
     @tiddler.new_revision tiddler_params
 
     if @tiddler.save
-      redirect_to space_tiddler_path
+      redirect_to space_tiddler_path format: :html
     else
       redirect_to edit_space_tiddler_path
     end
