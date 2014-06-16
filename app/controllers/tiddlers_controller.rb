@@ -36,7 +36,13 @@ class TiddlersController < ApplicationController
 
   def update
     @tiddler = @space.tiddlers.find(params[:id])
-    @tiddler.new_revision tiddler_params
+
+    if request.patch?
+      @tiddler.new_revision_from_previous @tiddler.current_revision.id,
+        tiddler_params
+    else
+      @tiddler.new_revision tiddler_params
+    end
 
     if @tiddler.save
       redirect_to PathHelpers::html_path :space_tiddler_path, @space, @tiddler

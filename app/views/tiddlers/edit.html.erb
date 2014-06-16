@@ -12,7 +12,7 @@
 <main>
   <h1>Edit Tiddler</h1>
 
-  <%= form_for @tiddler, url: { action: "update" } do |f| %>
+  <%= form_for @tiddler, url: { action: "update", method: "patch" } do |f| %>
     <%= f.text_field :title %>
     <% if params["type"] == "file" or (!params["type"] &&  @tiddler.binary?) %>
       <%= f.file_field :file %>
