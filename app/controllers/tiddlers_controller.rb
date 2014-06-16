@@ -28,7 +28,7 @@ class TiddlersController < ApplicationController
     @tiddler.new_revision tiddler_params
 
     if @tiddler.save
-      redirect_to space_tiddler_path id: @tiddler, format: :html
+      redirect_to PathHelpers::html_path :space_tiddler_path, @space, @tiddler
     else
       redirect_to new_space_tiddler_path
     end
@@ -39,7 +39,7 @@ class TiddlersController < ApplicationController
     @tiddler.new_revision tiddler_params
 
     if @tiddler.save
-      redirect_to space_tiddler_path format: :html
+      redirect_to PathHelpers::html_path :space_tiddler_path, @space, @tiddler
     else
       redirect_to edit_space_tiddler_path
     end

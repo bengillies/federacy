@@ -8,7 +8,7 @@
   <ul class="revisions">
     <% @revisions.each do |revision| %>
       <li class="revision">
-        <%= link_to [revision.tiddler.space, revision.tiddler, revision] do %>
+        <%= link_to html_path(:space_tiddler_revision_path, revision.tiddler.space, revision.tiddler, revision) do %>
           <%= revision.title %><% end %>
         [<em><%= revision.created_at.strftime "%H:%M %d %B %Y" %></em>]
       </li>

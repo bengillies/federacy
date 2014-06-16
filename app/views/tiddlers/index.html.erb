@@ -12,7 +12,7 @@
   <ul class="tiddlers">
     <% @tiddlers.each do |tiddler| %>
       <li class="tiddler">
-        <%= link_to [tiddler.space, tiddler] do %>
+        <%= link_to html_path(:space_tiddler_path, tiddler.space, tiddler) do %>
           <%= tiddler.title %>
         <% end %>
       </li>

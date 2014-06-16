@@ -16,13 +16,13 @@ class RevisionsController < ApplicationController
   end
 
   def create
-    @tiddler.new_revision_from_previous params[:revision][:id]
+    @revision = @tiddler.revisions.find params[:revision][:id]
+    @tiddler.new_revision_from_previous @revision.id
 
     if @tiddler.save
-      redirect_to space_tiddler_path id: @tiddler.id, format: :html
+      redirect_to PathHelpers::html_path :space_tiddler_path, @space, @tiddler
     else
-      redirect_to space_tiddler_revision_path tiddler_id: @tiddler.id,
-        id: params[:revision][:id], format: :html
+      redirect_to PathHelpers::html_path :space_tiddler_revision_path, @space, @tiddler, @revision
     end
   end
 

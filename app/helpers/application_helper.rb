@@ -27,6 +27,8 @@ module ApplicationHelper
     render "shared/renderers/#{renderer}", object: tiddler
   end
 
-  private
+  def html_path *args
+    PathHelpers::html_path *args
+  end
 
 end
