@@ -22,7 +22,8 @@ class RevisionsController < ApplicationController
     if @tiddler.save
       redirect_to PathHelpers::html_path :space_tiddler_path, @space, @tiddler
     else
-      redirect_to PathHelpers::html_path :space_tiddler_revision_path, @space, @tiddler, @revision
+      redirect_to PathHelpers::html_path :space_tiddler_revision_path,
+        @space, @tiddler, @revision
     end
   end
 

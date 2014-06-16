@@ -1,5 +1,5 @@
-class TiddlerSerializer < ActiveModel::Serializer
-  attributes :id, :title, :text, :tags, :fields, :created, :modified, :content_type, :space
+class TiddlerSerializer < ApplicationSerializer
+  attributes :id, :title, :text, :tags, :fields, :created, :modified, :content_type, :space, :render
 
   def space
     { id: object.space.id, name: object.space.name }

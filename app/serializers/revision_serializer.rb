@@ -1,6 +1,6 @@
-class RevisionSerializer < ActiveModel::Serializer
+class RevisionSerializer < ApplicationSerializer
   attributes :id, :title, :text, :tags, :fields, :created, :content_type,
-    :space, :tiddler
+    :space, :tiddler, :render
 
   def space
     { id: object.tiddler.space.id, name: object.tiddler.space.name }
@@ -14,3 +14,4 @@ class RevisionSerializer < ActiveModel::Serializer
     { id: object.tiddler.id, title: object.tiddler.title }
   end
 end
+

@@ -24,7 +24,7 @@ module ApplicationHelper
       end
     end
 
-    render "shared/renderers/#{renderer}", object: tiddler
+    render "shared/renderers/#{renderer}.html.erb", object: tiddler
   end
 
   def html_path *args
