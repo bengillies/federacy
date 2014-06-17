@@ -7,8 +7,14 @@ class ApplicationController < ActionController::Base
 
   protected
 
+  #HTTP Status codes
+
   def not_found name
     render text: "#{name} Not Found", status: :not_found
+  end
+
+  def forbidden action, name
+    render text: "You cannot #{action} this #{name}", status: :forbidden
   end
 
   def created type, object, location
@@ -22,5 +28,19 @@ class ApplicationController < ActionController::Base
 
   def unprocessable_entity
     render text: "Unprocessable Entity", status: :unprocessable_entity
+  end
+
+  # Permissions checking
+
+  %w(tiddler space).each do |object|
+    define_method "create_#{object}?" do
+      current_user.send("create_#{object}?", @space)
+    end
+    define_method "edit_#{object}?" do
+      current_user.send("edit_#{object}?", instance_variable_get("@#{object}"))
+    end
+    define_method "delete_#{object}?" do
+      current_user.send("delete_#{object}?", instance_variable_get("@#{object}"))
+    end
   end
 end

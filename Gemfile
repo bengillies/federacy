@@ -26,6 +26,9 @@ gem 'jquery-rails'
 # JSON rendering
 gem 'active_model_serializers', '~>0.8.0'
 
+# User management
+gem 'devise', '~> 3.2.4'
+
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0',          group: :doc
 

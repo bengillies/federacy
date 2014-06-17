@@ -3,7 +3,7 @@
 <% end %>
 
 <% content_for :nav do %>
-  <%= link_to "Edit Space", edit_space_path %>
+  <%= link_to("Edit Space", edit_space_path) if user_can?(:edit_space, @space) %>
 <% end %>
 
 <main>

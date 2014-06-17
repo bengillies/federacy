@@ -31,4 +31,8 @@ module ApplicationHelper
     PathHelpers::html_path *args
   end
 
+  def user_can?(action, object)
+    current_user && current_user.send("#{action}?", object)
+  end
+
 end

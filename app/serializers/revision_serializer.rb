@@ -1,9 +1,13 @@
 class RevisionSerializer < ApplicationSerializer
   attributes :id, :title, :text, :tags, :fields, :created, :content_type,
-    :space, :tiddler, :render
+    :space, :tiddler, :render, :modifier
 
   def space
     { id: object.tiddler.space.id, name: object.tiddler.space.name }
+  end
+
+  def modifier
+    { id: object.modifier.id, email: object.modifier.email }
   end
 
   def tags

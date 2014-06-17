@@ -1,12 +1,17 @@
 class Tiddler < ActiveRecord::Base
   has_many :revisions, ->{ order "created_at DESC" }, inverse_of: :tiddler, dependent: :destroy
   belongs_to :space, inverse_of: :tiddlers
+  belongs_to :user
   has_many :file_revisions, inverse_of: :tiddler, dependent: :destroy
   has_many :text_revisions, inverse_of: :tiddler, dependent: :destroy
 
   validates_presence_of :space
 
-  delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, to: :current_revision
+  delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, :modifier, to: :current_revision
+
+  def creator
+    user
+  end
 
   def current_revision
     revisions.first || Revision.new
@@ -24,7 +29,7 @@ class Tiddler < ActiveRecord::Base
     revision_body = revision_type(attrs).build
     revision_body.set_body! attrs
 
-    revision = revision_body.revisions.build title: attrs["title"]
+    revision = revision_body.revisions.build title: attrs["title"], user_id: attrs["current_user"].id
     revision.add_tags attrs["tags"] unless attrs.fetch("tags", nil).nil?
     revision.add_fields attrs["fields"] unless attrs.fetch("fields", nil).nil?
 

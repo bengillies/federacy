@@ -3,6 +3,7 @@ class TiddlersController < ApplicationController
 
   wrap_parameters :tiddler, include: %w(title text file tags fields content_type)
 
+  before_action :authenticate_user!, only: [:new, :edit, :create, :update, :destroy]
   before_action :find_space
 
   self.responder = TiddlerResponder
@@ -25,18 +26,23 @@ class TiddlersController < ApplicationController
 
   def new
     @tiddler = @space.tiddlers.build
+    return forbidden(:create, :tiddler) unless create_tiddler?
+    @tiddler
   end
 
   def edit
     begin
       @tiddler = @space.tiddlers.find(params[:id])
+      return forbidden(:edit, :tiddler) unless edit_tiddler?
+      @tiddler
     rescue ActiveRecord::RecordNotFound
       not_found "Tiddler"
     end
   end
 
   def create
-    @tiddler = @space.tiddlers.build
+    @tiddler = @space.tiddlers.build user_id: current_user.id
+    return forbidden(:create, :tiddler) unless create_tiddler?
     @tiddler.new_revision tiddler_params
 
     respond_with do |format|
@@ -59,6 +65,7 @@ class TiddlersController < ApplicationController
   def update
     begin
       @tiddler = @space.tiddlers.find(params[:id])
+      return forbidden(:edit, :tiddler) unless edit_tiddler?
     rescue ActiveRecord::RecordNotFound
       return not_found "Tiddler"
     end
@@ -88,6 +95,7 @@ class TiddlersController < ApplicationController
   def destroy
     begin
       @tiddler = @space.tiddlers.find(params[:id])
+      return forbidden(:delete, :tiddler) unless delete_tiddler?
     rescue ActiveRecord::RecordNotFound
       return not_found "Tiddler"
     end
@@ -111,7 +119,7 @@ class TiddlersController < ApplicationController
 
   def find_space
     begin
-      @space = Space.find(params[:space_id])
+      @space = Space.visible_to_user(current_user).find(params[:space_id])
     rescue ActiveRecord::RecordNotFound
       not_found "Space"
     end
@@ -121,6 +129,8 @@ class TiddlersController < ApplicationController
     params.require(:tiddler)
       .permit(:title, :text, :file, :fields, :content_type, tags: []).tap do |whitelisted|
         whitelisted[:fields] = params[:tiddler][:fields]
+        whitelisted[:tags] = params[:tiddler][:tags] if params[:tiddler][:tags].class == String
+        whitelisted[:current_user] = current_user
       end
   end
 end

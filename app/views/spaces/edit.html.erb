@@ -3,8 +3,10 @@
 <% end %>
 
 <% content_for :nav do %>
-  <%= form_for @space, url: { action: "destroy" }, method: :delete do |f| %>
-    <%= f.submit "Delete" %>
+  <% if user_can? :delete_space, @space %>
+    <%= form_for @space, url: { action: "destroy" }, method: :delete do |f| %>
+      <%= f.submit "Delete" %>
+    <% end %>
   <% end %>
 <% end %>
 
@@ -14,6 +16,7 @@
   <%= form_for @space, url: { action: "update" } do |f| %>
     <%= f.text_field :name %>
     <%= f.text_area :description %>
+    <%= f.select :space_type, [["Readable By Everyone", :open], ["Only visible to space members", :members_only]] %>
     <%= f.submit "Save" %>
   <% end %>
 </main>

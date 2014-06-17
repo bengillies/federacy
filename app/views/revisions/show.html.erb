@@ -3,9 +3,11 @@
 <% end %>
 
 <% content_for :nav do %>
-  <%= form_tag space_tiddler_revisions_path, method: :post do %>
-    <%= hidden_field_tag "revision[id]", @revision.id %>
-    <%= submit_tag "Revert" %>
+  <% if user_can? :edit_tiddler, @tiddler %>
+    <%= form_tag space_tiddler_revisions_path, method: :post do %>
+      <%= hidden_field_tag "revision[id]", @revision.id %>
+      <%= submit_tag "Revert" %>
+    <% end %>
   <% end %>
 <% end %>
 

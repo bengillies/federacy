@@ -3,8 +3,8 @@
 <% end %>
 
 <% content_for :nav do %>
-  <%= link_to "New Tiddler", new_space_tiddler_path %>
-  <%= link_to "Edit Tiddler", edit_space_tiddler_path %>
+  <%= link_to("New Tiddler", new_space_tiddler_path) if user_can?(:create_tiddler, @space) %>
+  <%= link_to("Edit Tiddler", edit_space_tiddler_path) if user_can?(:edit_tiddler, @tiddler) %>
 <% end %>
 
 <main>

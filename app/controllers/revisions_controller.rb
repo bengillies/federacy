@@ -1,6 +1,7 @@
 class RevisionsController < ApplicationController
   respond_to :html, :json
 
+  before_action :authenticate_user!, only: [:create]
   before_action :find_space, :find_tiddler
 
   self.responder = TiddlerResponder
@@ -23,7 +24,8 @@ class RevisionsController < ApplicationController
 
   def create
     begin
-    @revision = @tiddler.revisions.find params[:revision][:id]
+      @revision = @tiddler.revisions.find params[:revision][:id]
+      return forbidden(:revert, :tiddler) unless edit_tiddler?
     rescue ActiveRecord::RecordNotFound
       return unprocessable_entity
     end
@@ -51,7 +53,7 @@ class RevisionsController < ApplicationController
 
   def find_space
     begin
-      @space = Space.find(params[:space_id])
+      @space = Space.visible_to_user(current_user).find(params[:space_id])
     rescue ActiveRecord::RecordNotFound
       not_found "Space"
     end

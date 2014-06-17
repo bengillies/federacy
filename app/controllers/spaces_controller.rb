@@ -3,8 +3,11 @@ class SpacesController < ApplicationController
 
   wrap_parameters :space, include: %w(name description)
 
+  before_action :authenticate_user!, only: [:new, :edit, :create, :update, :destroy]
+
   def index
-    @spaces = Space.order('updated_at DESC')
+    @spaces = Space.visible_to_user(current_user)
+
     respond_with @spaces do |format|
       format.atom { render layout: false }
     end
@@ -12,7 +15,7 @@ class SpacesController < ApplicationController
 
   def show
     begin
-      @space = Space.find params[:id]
+      @space = Space.visible_to_user(current_user).find(params[:id])
       respond_with @space
     rescue ActiveRecord::RecordNotFound
       not_found "Space"
@@ -26,6 +29,8 @@ class SpacesController < ApplicationController
   def edit
     begin
       @space = Space.find params[:id]
+      return forbidden(:edit, :space) unless edit_space?
+      @space
     rescue ActiveRecord::RecordNotFound
       not_found "Space"
     end
@@ -34,6 +39,8 @@ class SpacesController < ApplicationController
   def update
     begin
       @space = Space.find params[:id]
+      return forbidden(:edit, :space) unless edit_space?
+      @space
     rescue ActiveRecord::RecordNotFound
       return not_found "Space"
     end
@@ -52,7 +59,7 @@ class SpacesController < ApplicationController
   end
 
   def create
-    @space = Space.new space_params
+    @space = Space.new_with_user space_params
 
     respond_with do |format|
       if @space.save
@@ -68,6 +75,8 @@ class SpacesController < ApplicationController
   def destroy
     begin
       @space = Space.find params[:id]
+      return forbidden(:delete, :space) unless delete_space?
+      @space
     rescue ActiveRecord::RecordNotFound
       return not_found "Space"
     end
@@ -86,7 +95,6 @@ class SpacesController < ApplicationController
   private
 
   def space_params
-    params.require(:space).permit(:name, :description)
+    params.require(:space).permit(:name, :description, :space_type)
   end
-
 end

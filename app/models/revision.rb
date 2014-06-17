@@ -3,8 +3,13 @@ class Revision < ActiveRecord::Base
   has_many :revision_tags, inverse_of: :revision, dependent: :delete_all
   belongs_to :tiddler, inverse_of: :revisions
   belongs_to :textable, polymorphic: true
+  belongs_to :user
 
   before_save :set_defaults
+
+  def modifier
+    user
+  end
 
   def created
     created_at
