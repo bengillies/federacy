@@ -9,8 +9,12 @@ class SpacesController < ApplicationController
   end
 
   def show
-    @space = Space.find params[:id]
-    respond_with @space
+    begin
+      @space = Space.find params[:id]
+      respond_with @space
+    rescue ActiveRecord::RecordNotFound
+      not_found "Space"
+    end
   end
 
   def new
@@ -18,38 +22,62 @@ class SpacesController < ApplicationController
   end
 
   def edit
-    @space = Space.find params[:id]
+    begin
+      @space = Space.find params[:id]
+    rescue ActiveRecord::RecordNotFound
+      not_found "Space"
+    end
   end
 
   def update
-    @space = Space.find params[:id]
+    begin
+      @space = Space.find params[:id]
+    rescue ActiveRecord::RecordNotFound
+      return not_found "Space"
+    end
 
     @space.update space_params
 
-    if @space.save
-      redirect_to @space
-    else
-      redirect_to edit_space_path
+    respond_with do |format|
+      if @space.save
+        format.html { redirect_to @space }
+        format.json { no_content }
+      else
+        format.html { redirect_to edit_space_path }
+        format.json { unprocessable_entity }
+      end
     end
   end
 
   def create
     @space = Space.new space_params
 
-    if @space.save
-      redirect_to @space
-    else
-      redirect_to new_space_path
+    respond_with do |format|
+      if @space.save
+        format.html { redirect_to @space }
+        format.json { created :json, @space, space_path(@space) }
+      else
+        format.html { redirect_to new_space_path }
+        format.json { unprocessable_entity }
+      end
     end
   end
 
   def destroy
-    @space = Space.find params[:id]
+    begin
+      @space = Space.find params[:id]
+    rescue ActiveRecord::RecordNotFound
+      return not_found "Space"
+    end
 
-    if @space.destroy
-      redirect_to spaces_path
-    else
-      redirect_to edit_space_path
+    respond_with do |format|
+      if @space.destroy
+        format.html { redirect_to spaces_path }
+        format.json { no_content }
+      else
+        format.html { redirect_to edit_space_path }
+        format.json { unprocessable_entity }
+      end
     end
   end
 

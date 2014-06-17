@@ -15,7 +15,8 @@ class Revision < ActiveRecord::Base
   end
 
   def text
-    if textable.respond_to? :text then textable.text else nil end
+    tiddler_text = if textable.respond_to? :text then textable.text else nil end
+    tiddler_text || ''
   end
 
   def content_type

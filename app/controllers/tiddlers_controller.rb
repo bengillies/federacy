@@ -8,13 +8,17 @@ class TiddlersController < ApplicationController
   self.responder = TiddlerResponder
 
   def index
-    @tiddlers = @space.tiddlers.all
-    respond_with @tiddlers
+      @tiddlers = @space.tiddlers.all
+      respond_with @tiddlers
   end
 
   def show
-    @tiddler = @space.tiddlers.find(params[:id])
-    respond_with @tiddler
+    begin
+      @tiddler = @space.tiddlers.find(params[:id])
+      respond_with @tiddler
+    rescue ActiveRecord::RecordNotFound
+      not_found "Tiddler"
+    end
   end
 
   def new
@@ -22,22 +26,40 @@ class TiddlersController < ApplicationController
   end
 
   def edit
-    @tiddler = @space.tiddlers.find(params[:id])
+    begin
+      @tiddler = @space.tiddlers.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      not_found "Tiddler"
+    end
   end
 
   def create
     @tiddler = @space.tiddlers.build
     @tiddler.new_revision tiddler_params
 
-    if @tiddler.save
-      redirect_to PathHelpers::html_path :space_tiddler_path, @space, @tiddler
-    else
-      redirect_to new_space_tiddler_path
+    respond_with do |format|
+      if @tiddler.save
+        format.html {
+          redirect_to PathHelpers::html_path :space_tiddler_path, @space, @tiddler
+        }
+        format.json {
+          created :json, @tiddler, space_tiddler_path(@space, @tiddler)
+          }
+      else
+        format.html {
+          redirect_to new_space_tiddler_path
+        }
+        format.json { unprocessable_entity }
+      end
     end
   end
 
   def update
-    @tiddler = @space.tiddlers.find(params[:id])
+    begin
+      @tiddler = @space.tiddlers.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      return not_found "Tiddler"
+    end
 
     if request.patch?
       @tiddler.new_revision_from_previous @tiddler.current_revision.id,
@@ -46,27 +68,51 @@ class TiddlersController < ApplicationController
       @tiddler.new_revision tiddler_params
     end
 
-    if @tiddler.save
-      redirect_to PathHelpers::html_path :space_tiddler_path, @space, @tiddler
-    else
-      redirect_to edit_space_tiddler_path
+    respond_with do |format|
+      if @tiddler.save
+        format.html {
+          redirect_to PathHelpers::html_path :space_tiddler_path, @space, @tiddler
+        }
+        format.json { no_content }
+      else
+        format.html {
+          redirect_to edit_space_tiddler_path
+        }
+        format.json { unprocessable_entity }
+      end
     end
   end
 
   def destroy
-    @tiddler = @space.tiddlers.find(params[:id])
+    begin
+      @tiddler = @space.tiddlers.find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      return not_found "Tiddler"
+    end
 
-    if @tiddler.destroy
-      redirect_to space_tiddlers_path
-    else
-      redirect_to edit_space_tiddler_path
+    respond_with do |format|
+      if @tiddler.destroy
+        format.html {
+          redirect_to space_tiddlers_path
+        }
+        format.json { no_content }
+      else
+        format.html {
+          redirect_to edit_space_tiddler_path
+        }
+        format.json { unprocessable_entity }
+      end
     end
   end
 
   private
 
   def find_space
-    @space = Space.find(params[:space_id])
+    begin
+      @space = Space.find(params[:space_id])
+    rescue ActiveRecord::RecordNotFound
+      not_found "Space"
+    end
   end
 
   def tiddler_params
