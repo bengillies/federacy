@@ -7,7 +7,9 @@ class RevisionsController < ApplicationController
 
   def index
     @revisions = @tiddler.revisions.all
-    respond_with @revisions
+    respond_with @revisions do |format|
+      format.atom { render layout: false }
+    end
   end
 
   def show

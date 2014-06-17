@@ -9,7 +9,9 @@ class TiddlersController < ApplicationController
 
   def index
       @tiddlers = @space.tiddlers.all
-      respond_with @tiddlers
+      respond_with @tiddlers do |format|
+        format.atom { render layout: false }
+      end
   end
 
   def show

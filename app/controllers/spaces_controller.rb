@@ -4,8 +4,10 @@ class SpacesController < ApplicationController
   wrap_parameters :space, include: %w(name description)
 
   def index
-    @spaces = Space.all
-    respond_with @spaces
+    @spaces = Space.order('updated_at DESC')
+    respond_with @spaces do |format|
+      format.atom { render layout: false }
+    end
   end
 
   def show

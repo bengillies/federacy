@@ -8,7 +8,16 @@ class Space < ActiveRecord::Base
 
   validates_presence_of :name
 
+  before_save :set_defaults
+
   def to_s
     name
+  end
+
+  private
+
+  def set_defaults
+    self.name ||= ''
+    self.description ||= ''
   end
 end
