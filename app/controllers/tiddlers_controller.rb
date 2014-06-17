@@ -1,6 +1,8 @@
 class TiddlersController < ApplicationController
   respond_to :html, :json
 
+  wrap_parameters :tiddler, include: %w(title text file tags fields content_type)
+
   before_action :find_space
 
   self.responder = TiddlerResponder
@@ -68,6 +70,9 @@ class TiddlersController < ApplicationController
   end
 
   def tiddler_params
-    params.require(:tiddler).permit(:title, :text, :file, :tags, :fields, :content_type)
+    params.require(:tiddler)
+      .permit(:title, :text, :file, :fields, :content_type, tags: []).tap do |whitelisted|
+        whitelisted[:fields] = params[:tiddler][:fields]
+      end
   end
 end

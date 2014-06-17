@@ -25,8 +25,8 @@ class Tiddler < ActiveRecord::Base
     revision_body.set_body! attrs
 
     revision = revision_body.revisions.build title: attrs["title"]
-    revision.add_tags attrs["tags"] if attrs.has_key? "tags"
-    revision.add_fields attrs["fields"] if attrs.has_key? "fields"
+    revision.add_tags attrs["tags"] unless attrs.fetch("tags", nil).nil?
+    revision.add_fields attrs["fields"] unless attrs.fetch("fields", nil).nil?
 
     revision
   end

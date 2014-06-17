@@ -1,6 +1,8 @@
 class SpacesController < ApplicationController
   respond_to :html, :json
 
+  wrap_parameters :space, include: %w(name description)
+
   def index
     @spaces = Space.all
     respond_with @spaces
