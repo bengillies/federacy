@@ -1,3 +1,4 @@
+<%= content_for :head, auto_discovery_link_tag(:atom, space_tiddler_revisions_path(@space, @tiddler, format: :atom), title: "Federacy: All Revisions for \"#{@tiddler.title}\" in #{@space}") %>
 <% content_for :title do %>
   All Revisions - <%= @tiddler.title %> - <%= @space %> - Federacy
 <% end %>
