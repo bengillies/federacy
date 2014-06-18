@@ -1,0 +1,16 @@
+<%= content_for :title do %>
+  <%= @user.email %> Profile
+<% end %>
+
+<main>
+  <h1><%= @user.email %> Profile</h1>
+
+  <h2>Spaces</h2>
+  <ul class="spaces">
+    <% @user.spaces.visible_to_user(current_user).each do |space| %>
+      <li class="space">
+        <%= link_to space.name, space_path(space) %>
+      </li>
+    <% end %>
+  </ul>
+</main>

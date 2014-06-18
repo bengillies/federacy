@@ -29,7 +29,7 @@ class RevisionsController < ApplicationController
     rescue ActiveRecord::RecordNotFound
       return unprocessable_entity
     end
-    @tiddler.new_revision_from_previous @revision.id
+    @tiddler.new_revision_from_previous @revision.id, "current_user" => current_user
 
     respond_with do |format|
       if @tiddler.save

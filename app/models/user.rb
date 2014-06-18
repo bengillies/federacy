@@ -12,7 +12,7 @@ class User < ActiveRecord::Base
 
   def space_user space
     begin
-      space_users.find(space.id)
+      space_users.find_by_space_id(space.id)
     rescue ActiveRecord::RecordNotFound
       nil
     end

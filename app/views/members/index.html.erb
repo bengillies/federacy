@@ -1,0 +1,37 @@
+<% content_for :title do %>
+  <%= "Manage" if user_can?(:manage_space, @space) %> Members for <%= @space %>
+<% end %>
+
+<main>
+  <h1>
+    <%= "Manage" if user_can?(:manage_space, @space) %> Members for <%= @space %>
+  </h1>
+
+  <ul class="members">
+    <% @members.each do |member| %>
+      <li class="member">
+        <%= link_to member.user.email, profile_path(member.user) %>
+        <% if user_can? :manage_space, @space %>
+          <%= form_tag space_member_path(@space, member.user), method: :put do %>
+            <%= select_tag "member[access]", options_for_select(SpaceUser.access_descriptions, member.access) %>
+            <%= submit_tag "Update Access" %>
+          <% end %>
+          <% unless current_user == member.user %>
+            <%= form_tag space_member_path(@space, member.user), method: :delete do %>
+              <%= submit_tag "Remove" %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </li>
+    <% end %>
+    <% if user_can? :manage_space, @space %>
+      <li class="member new-member">
+        <%= form_tag space_members_path(@space), method: :post do %>
+          <%= text_field_tag "member[email]" %>
+          <%= select_tag "member[access]", options_for_select(SpaceUser.access_descriptions) %>
+          <%= submit_tag "Add User" %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</main>
