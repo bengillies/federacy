@@ -5,7 +5,16 @@ class ApplicationController < ActionController::Base
 
   serialization_scope :view_context
 
+  before_filter :configure_permitted_devise_parameters, if: :devise_controller?
+
   protected
+
+  def configure_permitted_devise_parameters
+    devise_parameter_sanitizer.for(:sign_up) << :name
+    devise_parameter_sanitizer.for(:account_update) << :name
+    devise_parameter_sanitizer.for(:sign_up) << :icon
+    devise_parameter_sanitizer.for(:account_update) << :icon
+  end
 
   #HTTP Status codes
 

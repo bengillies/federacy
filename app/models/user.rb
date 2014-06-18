@@ -7,6 +7,9 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable
 
+  before_save :set_defaults
+
+  mount_uploader :icon, UserIconUploader
 
   # Define some methods for checking permissions of spaces and tiddlers
 
@@ -54,4 +57,9 @@ class User < ActiveRecord::Base
     perms && perms.admin?
   end
 
+  private
+
+  def set_defaults
+    self.name = 'Anonymous Coward' if self.name.blank?
+  end
 end

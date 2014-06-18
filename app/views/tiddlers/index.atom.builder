@@ -16,8 +16,8 @@ atom_feed do |feed|
       entry.title tiddler.title
       entry.content render_tiddler(tiddler, content_type: tiddler.content_type), type: :html
       entry.author do |author|
-        author.name(tiddler.creator.email)
-        author.name(tiddler.modifier.email) unless tiddler.modifier == tiddler.creator
+        author.name(tiddler.creator.name)
+        author.name(tiddler.modifier.name) unless tiddler.modifier == tiddler.creator
       end
     end
   end

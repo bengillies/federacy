@@ -19,6 +19,7 @@ gem 'redcarpet', '~> 3.1.2'
 
 # File upload
 gem 'carrierwave', '~> 0.10.0'
+gem 'mini_magick', '~> 3.7.0'
 
 # Use jquery as the JavaScript library
 gem 'jquery-rails'

@@ -7,11 +7,11 @@ class TiddlerSerializer < ApplicationSerializer
   end
 
   def creator
-    { id: object.creator.id, email: object.creator.email }
+    { id: object.creator.id, name: object.creator.name, icon: object.creator.icon.url }
   end
 
   def modifier
-    { id: object.modifier.id, email: object.modifier.email }
+    { id: object.modifier.id, email: object.modifier.name, icon: object.modifier.icon.url }
   end
 
   def tags

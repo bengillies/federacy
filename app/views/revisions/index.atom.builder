@@ -17,7 +17,7 @@ atom_feed do |feed|
       entry.title revision.title
       entry.content render_tiddler(revision, content_type: revision.content_type), type: :html
       entry.author do |author|
-        author.name(tiddler.modifier.email)
+        author.name(tiddler.modifier.name)
       end
     end
   end

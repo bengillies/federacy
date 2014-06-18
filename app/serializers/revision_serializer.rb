@@ -7,7 +7,7 @@ class RevisionSerializer < ApplicationSerializer
   end
 
   def modifier
-    { id: object.modifier.id, email: object.modifier.email }
+    { id: object.modifier.id, name: object.modifier.name, icon: object.modifier.icon.url }
   end
 
   def tags

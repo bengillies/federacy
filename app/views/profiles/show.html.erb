@@ -1,9 +1,10 @@
 <%= content_for :title do %>
-  <%= @user.email %> Profile
+  <%= @user.name %> - Federacy
 <% end %>
 
 <main>
-  <h1><%= @user.email %> Profile</h1>
+  <h1><%= @user.name %> - Federacy</h1>
+  <%= image_tag @user.icon.url, alt: @user.name %>
 
   <h2>Spaces</h2>
   <ul class="spaces">
