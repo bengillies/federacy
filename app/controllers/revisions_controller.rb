@@ -1,4 +1,6 @@
 class RevisionsController < ApplicationController
+  include Filterable
+
   respond_to :html, :json
 
   before_action :authenticate_user!, only: [:create]
@@ -7,7 +9,7 @@ class RevisionsController < ApplicationController
   self.responder = TiddlerResponder
 
   def index
-    @revisions = @tiddler.revisions.all
+    @revisions = apply_scopes(@tiddler.revisions).all
     respond_with @revisions do |format|
       format.atom { render layout: false }
     end

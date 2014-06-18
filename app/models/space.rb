@@ -2,10 +2,10 @@ class Space < ActiveRecord::Base
   has_many :space_users
   has_many :users, through: :space_users
   has_many :tiddlers, ->{
-    select("tiddlers.*, max(revisions.updated_at) as last_updated_at")
-      .joins(:revisions)
-      .group("tiddlers.id")
-      .order("last_updated_at DESC")
+      select("tiddlers.*, revisions.created_at")
+        .includes(:latest_revision)
+        .joins(:latest_revision)
+        .order("revisions.created_at DESC")
   }, inverse_of: :space, dependent: :destroy
 
   enum space_type: [:open, :members_only]

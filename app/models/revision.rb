@@ -7,6 +7,39 @@ class Revision < ActiveRecord::Base
 
   before_save :set_defaults
 
+  scope :by_tag, ->(tag) { joins(:revision_tags).where(revision_tags: { name: tag }) }
+  scope :by_title, ->(title) { where(title: title) }
+  scope :by_creator, ->(name) { joins(:user).where(users: { name: name }) }
+  scope :by_modifier, ->(name) {
+    by_creator(name)
+  }
+  scope :by_content_type, ->(type) {
+    joins('left outer join text_revisions on revisions.textable_id = text_revisions.id')
+      .joins('left outer join file_revisions on revisions.textable_id = file_revisions.id')
+      .where("(revisions.textable_type = 'TextRevision' AND text_revisions.content_type = ?) \
+        OR (revisions.textable_type = 'FileRevision' AND file_revisions.content_type = ?)",
+        type, type)
+  }
+  scope :by_created, ->(date) {
+    gte = date.start_with?('>') ? '>=' : date.start_with?('<') ? '<=' : '='
+    date = date.gsub(/^<|>/, '') unless gte == '='
+    where("revisions.created_at #{gte} ?", date)
+  }
+  scope :by_modified, ->(date) {
+    by_created(date)
+  }
+  scope :by_field, ->(field_hash) {
+    scope = joins(:revision_fields)
+    field_hash.each do |name, value|
+      scope = if value.nil?
+        scope.where(revision_fields: { key: name })
+      else
+        scope.where(revision_fields: { key: name, value: value })
+      end
+    end
+    scope
+  }
+
   def modifier
     user
   end

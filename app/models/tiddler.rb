@@ -1,7 +1,15 @@
 class Tiddler < ActiveRecord::Base
-  has_many :revisions, ->{ order "created_at DESC" }, inverse_of: :tiddler, dependent: :destroy
-  has_many :revision_tags, through: :revisions
-  has_many :revision_fields, through: :revisions
+  has_many :revisions, ->{ includes(:textable).order("created_at DESC") }, inverse_of: :tiddler, dependent: :destroy
+  has_many :revision_tags, through: :latest_revision
+  has_many :revision_fields, through: :latest_revision
+  has_one :latest_revision, -> {
+    where(%q(revisions.id in (
+      with latest_revisions as
+        (select *, ROW_NUMBER() OVER (
+          PARTITION BY tiddler_id ORDER BY created_at DESC
+        ) as created_order from revisions
+      ) select latest_revisions.id from latest_revisions where created_order = 1
+    ))) }, class_name: "Revision"
   belongs_to :space, inverse_of: :tiddlers
   belongs_to :user
   has_many :file_revisions, inverse_of: :tiddler, dependent: :destroy
@@ -11,15 +19,19 @@ class Tiddler < ActiveRecord::Base
 
   delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, :modifier, to: :current_revision
 
-  scope :by_tag, ->(tag) { joins(:revisions, :revision_tags).where(revision_tags: { name: tag }) }
-  scope :by_title, ->(title) { joins(:revisions).where(revisions: { title: title }) }
+  scope :by_tag, ->(tag) {
+    joins("inner join revision_tags on revisions.id = revision_tags.revision_id")
+      .where(revision_tags: { name: tag })
+      .uniq
+  }
+  scope :by_title, ->(title) { joins(:latest_revision).where(revisions: { title: title }) }
   scope :by_creator, ->(name) { joins(:user).where(users: { name: name }) }
   scope :by_modifier, ->(name) {
-    joins(:revisions).joins('inner join users on revisions.user_id = users.id')
+    joins(:latest_revision).joins('inner join users on revisions.user_id = users.id')
       .where(users: { name: name })
   }
   scope :by_content_type, ->(type) {
-    joins(:revisions)
+    joins(:latest_revision)
       .joins('left outer join text_revisions on revisions.textable_id = text_revisions.id')
       .joins('left outer join file_revisions on revisions.textable_id = file_revisions.id')
       .where("(revisions.textable_type = 'TextRevision' AND text_revisions.content_type = ?) \
@@ -34,10 +46,10 @@ class Tiddler < ActiveRecord::Base
   scope :by_modified, ->(date) {
     gte = date.start_with?('>') ? '>=' : date.start_with?('<') ? '<=' : '='
     date = date.gsub(/^<|>/, '') unless gte == '='
-    joins(:revisions).where("revisions.created_at #{gte} ?", date)
+    joins(:latest_revision).where("revisions.created_at #{gte} ?", date)
   }
   scope :by_field, ->(field_hash) {
-    scope = joins(:revisions, :revision_fields)
+    scope = joins('inner join revision_fields on revisions.id = revision_fields.revision_id')
     field_hash.each do |name, value|
       scope = if value.nil?
         scope.where(revision_fields: { key: name })
@@ -53,7 +65,7 @@ class Tiddler < ActiveRecord::Base
   end
 
   def current_revision
-    revisions.first || Revision.new
+    latest_revision || Revision.new
   end
 
   def created
