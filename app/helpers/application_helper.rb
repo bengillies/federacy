@@ -1,7 +1,23 @@
+require 'federacy_markdown'
+
 module ApplicationHelper
+
+  def markdown_renderer space
+    Redcarpet::Markdown.new(
+      FederacyMarkdown.new(space: space),
+      :no_intra_emphasis => true,
+      :tables => true,
+      :fenced_code_blocks => true,
+      :autolink => true,
+      :strikethrough => true,
+      :superscript => true,
+      :highlight => true,
+      :quotes => true
+    )
+  end
+
   def markdown text
-    renderer = Redcarpet::Markdown.new Redcarpet::Render::HTML.new
-    renderer.render(text).html_safe
+    markdown_renderer(@space).render(text).html_safe
   end
 
   def render_tiddler tiddler, options
