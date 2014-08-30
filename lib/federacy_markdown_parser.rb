@@ -1,0 +1,190 @@
+class FederacyMarkdownParser < Parslet::Parser
+
+  ##
+  # Types of things to match inside a text block
+  ##
+  rule(:sym) {
+    inline_code_block |
+    tiddlylink |
+    char
+  }
+
+  ##
+  # Types of block
+  #
+  # There is more than this in markdown, but we only care about a few as we only
+  # need to extract links from them
+  ##
+  rule(:block) {
+     code_block |
+     transclusion |
+     text_block |
+     new_line
+  }
+
+  ##
+  # Links
+  #
+  # In addition to normal markdown links, supported extra links are:
+  #   - [[links to tiddlers in square brackets]]
+  #   - [[titles of links then|actual link]]
+  #   - @link-to-space
+  #   - link-to-tiddler@space
+  #   - [[link to tiddler]]@space
+  #   - [[title|link to tiddler]]@space
+  #   - @user:space
+  #   - link-to-tiddler@user:space
+  #   - [[link to tiddler]]@user:space
+  #   - [[title|link to tiddler]]@user:space
+  #   - @[[link to space]]
+  #   - @[[title|link to space]]
+  #   - link-to-tiddler@[[space]]
+  #   - [[link to tiddler]]@[[space]]
+  #   - [[title|link to tiddler]]@[[space]]
+  #   - @[[user:space]]
+  #   - @[[title|user:space]]
+  #   - link-to-tiddler@[[user:space]]
+  #   - [[link to tiddler]]@[[user:space]]
+  #   - [[title|link to tiddler]]@[[user:space]]
+  ##
+  rule(:link_open) { str('[[') }
+  rule(:link_close) { str(']]') }
+  rule(:link_title_separator) { str('|') }
+  rule(:link_user_separator) { str(':') }
+  rule(:space_symbol) { str('@') }
+
+  rule(:link_body_simple) {
+    (link_close.absent? >> eol?.absent? >> any).repeat(1).as(:link)
+  }
+  rule(:link_body_with_title) {
+    (
+      link_title_separator.absent? >> eol?.absent? >> any
+    ).repeat(1).as(:title) >>
+    link_title_separator >>
+    link_body_simple
+  }
+  rule(:tiddler_link_body) {
+    link_body_with_title |
+    link_body_simple
+  }
+  rule(:tiddler_link) {
+    (
+      link_open >>
+      tiddler_link_body >>
+      link_close
+    ).as(:tiddler_link)
+  }
+
+  rule(:link_user_word) {
+    (
+      whitespace.absent? >>
+      link_user_separator.absent? >>
+      any
+    ).repeat(1).as(:user) >>
+    link_user_separator
+  }
+  rule(:link_user_body) {
+    (link_user_separator.absent? >> eol?.absent? >> any).repeat(1).as(:user) >>
+    link_user_separator
+  }
+
+  rule(:link_word) {
+    (whitespace.absent? >> any).repeat(1).as(:link)
+  }
+
+  rule(:space_link_body) {
+    link_open >> link_user_body >> link_body_simple >> link_close |
+    link_open >> link_body_simple >> link_close |
+    link_user_word >> link_word |
+    link_word
+  }
+  rule(:space_link) {
+    (space_symbol >> space_link_body).as(:space_link)
+  }
+
+  rule(:tiddler_space_link) {
+    (tiddler_link >> space_link).as(:tiddler_space_link)
+  }
+
+  rule(:tiddlylink) {
+    tiddler_space_link |
+    tiddler_link |
+    space_link
+  }
+
+  ##
+  # Transclusions
+  #
+  # A transclusion sits at the block level and contains a tiddler to transclude
+  #
+  # e.g.:
+  #
+  # {{{My Tiddler}}}
+  #
+  # {{{[[Abraham Lincoln]]@jon-wilkes-booth:people-to-kill}}}
+  ##
+  rule(:transclusion_start) { str('{{{') }
+  rule(:transclusion_end) { str('}}}') }
+  rule(:transclusion_tiddler) {
+    tiddlylink |
+    (transclusion_end.absent? >> eol?.absent? >> any).repeat(1).as(:link)
+  }
+  rule(:transclusion) {
+    (
+      transclusion_start >>
+      transclusion_tiddler >>
+      transclusion_end >> eol? >> eol?
+    ).as(:transclusion)
+  }
+
+  ##
+  # Text block definition
+  ##
+  rule(:char) { (eol?.absent? >> any) }
+  rule(:text) { sym.repeat(1) }
+  rule(:line) { text >> eol? }
+  rule(:text_block) { (line.repeat(1) >> eol?).as(:block) }
+
+
+  ##
+  # Code definitions
+  #
+  # We need to match these as things that look like links inside code blocks
+  # aren't really links
+  ##
+  rule(:code_delim) { str('`') }
+  rule(:code_block_delim) { code_delim >> code_delim >> code_delim }
+
+  rule(:inline_code?) { (code_delim.absent? >> any).repeat }
+  rule(:inline_code_block) {
+    (code_delim >> (code_delim | inline_code? >> code_delim)).as(:inline_code)
+  }
+
+  rule(:code?) { (code_block_end.absent? >> any).repeat }
+  rule(:code_block_start) {
+    code_block_delim >> (new_line.absent? >> any).repeat(0) >> new_line
+  }
+  rule(:code_block_end) { new_line >> code_block_delim >> eol? }
+  rule(:code_block) {
+    (code_block_start >> code? >> code_block_end).as(:code_block)
+  }
+
+
+  ##
+  # utility definitions
+  ##
+  rule(:whitespace) { match("\s") | new_line }
+  rule(:new_line) { (str("\r").maybe >> str("\n")) }
+  rule(:eof?) { any.absent? }
+  rule(:eol?) { new_line | eof? }
+
+  ##
+  # Entry point of parser
+  ##
+  rule(:document) {
+    block.repeat
+  }
+  root(:document)
+
+
+end

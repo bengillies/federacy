@@ -17,6 +17,9 @@ gem 'coffee-rails', '~> 4.0.0'
 # markdown
 gem 'redcarpet', '~> 3.1.2'
 
+# parser to extract links, etc
+gem 'parslet', '~> 1.6'
+
 # File upload
 gem 'carrierwave', '~> 0.10.0'
 gem 'mini_magick', '~> 3.7.0'
