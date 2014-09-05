@@ -1,12 +1,23 @@
 class FederacyMarkdownParser < Parslet::Parser
 
   ##
-  # Types of things to match inside a text block
+  # Types of things to match inside a text block line
   ##
   rule(:sym) {
     inline_code_block |
     tiddlylink |
+    markdown_link |
     char
+  }
+
+  ##
+  # Types of line
+  ##
+  rule(:line) {
+    code_block |
+    transclusion |
+    footer_reference |
+    text_line
   }
 
   ##
@@ -23,7 +34,7 @@ class FederacyMarkdownParser < Parslet::Parser
   }
 
   ##
-  # Links
+  # TiddlyLinks
   #
   # In addition to normal markdown links, supported extra links are:
   #   - [[links to tiddlers in square brackets]]
@@ -113,6 +124,144 @@ class FederacyMarkdownParser < Parslet::Parser
   }
 
   ##
+  # Markdown Links
+  #
+  # Standard links, images and links in footers
+  ##
+
+  rule(:square_open) { str('[') }
+  rule(:square_close) { str(']') }
+  rule(:bracket_open) { str('(') }
+  rule(:bracket_close) { str(')') }
+  rule(:exclamation_mark) { str('!') }
+
+  rule(:square_body) { (square_close.absent? >> any).repeat(1) }
+  rule(:square_link) { square_open >> square_body.as(:title) >> square_close }
+  rule(:bracket_body_link_only) {
+    (bracket_close.absent? >> any).repeat(1).as(:link)
+  }
+  rule(:bracket_body_with_title) {
+    (
+      (
+        bracket_close.absent? >> (
+          match("\s").repeat(1) >> str('"')
+        ).absent? >> any
+      ).repeat(1).as(:link) >>
+      match("\s").repeat(1) >> str('"') >>
+      (str('"').absent? >> any).repeat(1).as(:title_attr) >>
+      str('"')
+    )
+  }
+  rule(:bracket_body) {
+    bracket_body_with_title | bracket_body_link_only
+  }
+  rule(:bracket_section) {
+    bracket_open >> bracket_body >> bracket_close
+  }
+  rule(:markdown_base_link) {
+    square_link >> bracket_section
+  }
+  rule(:standard_reference_base) {
+    square_open >> square_body.as(:title) >> square_close >>
+    match("\s").repeat >>
+    square_open >> square_body.as(:reference) >> square_close
+  }
+
+  rule(:simple_reference_base) {
+    square_open >> square_body.as(:title_and_reference) >> square_close
+  }
+  rule(:standard_image) {
+    (exclamation_mark >> markdown_base_link).as(:image_link)
+  }
+  rule(:standard_image_with_title) {
+    (exclamation_mark >> square_link >> bracket_body_with_title).as(:image_link)
+  }
+  rule(:footer_image) {
+    exclamation_mark >>
+    (standard_reference_base | simple_reference_base).as(:footer_image)
+  }
+  rule(:square_with_image) {
+    square_open >> image_link >> square_close
+  }
+
+  rule(:standard_link) {
+    (
+      (square_with_image >> bracket_section) |
+      markdown_base_link
+    ).as(:standard_link)
+  }
+
+  rule(:image_link) {
+    standard_image |
+    footer_image >> bracket_section.absent? |
+    standard_image_with_title
+  }
+
+  rule(:footer_link) {
+    (
+      (
+        square_with_image >> match("\s").repeat >>
+        square_open >> square_body.as(:reference) >> square_close
+      ) |
+      standard_reference_base |
+      square_with_image |
+      simple_reference_base
+    ).as(:footer_link)
+  }
+
+  rule(:markdown_link) {
+    image_link |
+    standard_link |
+    footer_link
+  }
+
+  ##
+  # References that footer_links point to
+  ##
+  rule(:footer_separator) { str(':') >> match("\s").maybe }
+  rule(:angle_open) { str('<') }
+  rule(:angle_close) { str('>') }
+  rule(:angle_body) { (angle_close.absent? >> any).repeat(1) }
+
+  rule(:footer_reference_start) {
+    square_open >> square_body.as(:reference) >> square_close >>
+    footer_separator
+  }
+
+  rule(:footer_reference_with_angles) {
+    footer_reference_start >>
+    angle_open >> angle_body.as(:link) >> angle_close >> match("\s").repeat >> (
+      str('"') >> (str('"').absent? >> any).repeat(1).as(:title_attr) >>
+      str('"')
+    ).maybe
+  }
+  rule(:footer_reference_without_angles_with_title) {
+    footer_reference_start >>
+
+          match("\s").repeat(1) >> str('"')
+    (
+      (
+        match("\s").repeat(1) >> str('"')
+      ).absent? >> any
+    ).repeat(1).as(:link) >> match("\s").repeat(1) >>
+    str('"') >>
+    (str('"').absent? >> any).repeat(1).as(:title_attr) >>
+    str('"')
+  }
+
+  rule(:footer_reference_without_angles) {
+    footer_reference_start >> (eol?.absent? >> any).repeat(1).as(:link)
+  }
+
+  rule(:footer_reference) {
+    (
+      footer_reference_with_angles |
+      footer_reference_without_angles_with_title |
+      footer_reference_without_angles
+    ).as(:footer_reference) >> eol?
+  }
+
+  ##
   # Transclusions
   #
   # A transclusion sits at the block level and contains a tiddler to transclude
@@ -141,8 +290,8 @@ class FederacyMarkdownParser < Parslet::Parser
   # Text block definition
   ##
   rule(:char) { (eol?.absent? >> any) }
-  rule(:text) { sym.repeat(1) }
-  rule(:line) { text >> eol? }
+  rule(:text) { sym.repeat(1).as(:text) }
+  rule(:text_line) { text >> eol? }
   rule(:text_block) { (line.repeat(1) >> eol?).as(:block) }
 
 
