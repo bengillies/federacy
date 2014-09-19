@@ -136,7 +136,9 @@ class FederacyMarkdownParser < Parslet::Parser
   rule(:exclamation_mark) { str('!') }
 
   rule(:square_body) { (square_close.absent? >> any).repeat(1) }
-  rule(:square_link) { square_open >> square_body.as(:title) >> square_close }
+  rule(:square_link) {
+    square_open >> square_body.as(:title) >> square_close >> str(' ').maybe
+  }
   rule(:bracket_body_link_only) {
     (bracket_close.absent? >> any).repeat(1).as(:link)
   }
@@ -181,7 +183,7 @@ class FederacyMarkdownParser < Parslet::Parser
     (standard_reference_base | simple_reference_base).as(:footer_image)
   }
   rule(:square_with_image) {
-    square_open >> image_link >> square_close
+    square_open >> image_link >> square_close >> str(' ').maybe
   }
 
   rule(:standard_link) {
@@ -221,32 +223,50 @@ class FederacyMarkdownParser < Parslet::Parser
   rule(:footer_separator) { str(':') >> match("\s").maybe }
   rule(:angle_open) { str('<') }
   rule(:angle_close) { str('>') }
-  rule(:angle_body) { (angle_close.absent? >> any).repeat(1) }
+  rule(:angle_body) { (angle_close.absent? >> eol?.absent? >> any).repeat(1) }
 
   rule(:footer_reference_start) {
     square_open >> square_body.as(:reference) >> square_close >>
     footer_separator
   }
 
+  rule(:footer_reference_title_double_quote) {
+    whitespace.repeat >>
+    str('"') >> (str('"').absent? >> any).repeat(1).as(:title_attr) >>
+    str('"')
+  }
+
+  rule(:footer_reference_title_single_quote) {
+    whitespace.repeat >>
+    str('\'') >> (str('\'').absent? >> any).repeat(1).as(:title_attr) >>
+    str('\'')
+  }
+
+  rule(:footer_reference_title_bracket) {
+    whitespace.repeat >>
+    str('(') >> (str(')').absent? >> any).repeat(1).as(:title_attr) >>
+    str(')')
+  }
+
+  rule(:footer_reference_title) {
+    footer_reference_title_double_quote |
+    footer_reference_title_single_quote |
+    footer_reference_title_bracket
+  }
+
   rule(:footer_reference_with_angles) {
     footer_reference_start >>
-    angle_open >> angle_body.as(:link) >> angle_close >> match("\s").repeat >> (
-      str('"') >> (str('"').absent? >> any).repeat(1).as(:title_attr) >>
-      str('"')
-    ).maybe
+    angle_open >> angle_body.as(:link) >> angle_close >>
+    footer_reference_title.maybe
   }
   rule(:footer_reference_without_angles_with_title) {
     footer_reference_start >>
-
-          match("\s").repeat(1) >> str('"')
     (
       (
         match("\s").repeat(1) >> str('"')
-      ).absent? >> any
-    ).repeat(1).as(:link) >> match("\s").repeat(1) >>
-    str('"') >>
-    (str('"').absent? >> any).repeat(1).as(:title_attr) >>
-    str('"')
+      ).absent? >> eol?.absent? >> any
+    ).repeat(1).as(:link) >>
+    footer_reference_title
   }
 
   rule(:footer_reference_without_angles) {
