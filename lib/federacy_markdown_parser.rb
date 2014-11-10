@@ -27,10 +27,10 @@ class FederacyMarkdownParser < Parslet::Parser
   # need to extract links from them
   ##
   rule(:block) {
-     code_block |
-     transclusion |
-     text_block |
-     new_line
+    code_block |
+    transclusion |
+    text_block |
+    new_line
   }
 
   ##
@@ -135,14 +135,16 @@ class FederacyMarkdownParser < Parslet::Parser
   rule(:bracket_close) { str(')') }
   rule(:exclamation_mark) { str('!') }
 
-  rule(:square_body) { (square_close.absent? >> any).repeat(1) }
+  rule(:square_body) {
+    (square_close.absent? >> image_link.absent? >> any).repeat(1)
+  }
   rule(:square_link) {
     square_open >> square_body.as(:title) >> square_close >> str(' ').maybe
   }
   rule(:bracket_body_link_only) {
     (bracket_close.absent? >> any).repeat(1).as(:link)
   }
-  rule(:bracket_body_with_title) {
+  rule(:bracket_body_with_title_double_quote) {
     (
       (
         bracket_close.absent? >> (
@@ -153,6 +155,21 @@ class FederacyMarkdownParser < Parslet::Parser
       (str('"').absent? >> any).repeat(1).as(:title_attr) >>
       str('"')
     )
+  }
+  rule(:bracket_body_with_title_single_quote) {
+    (
+      (
+        bracket_close.absent? >> (
+          match("\s").repeat(1) >> str("'")
+        ).absent? >> any
+      ).repeat(1).as(:link) >>
+      match("\s").repeat(1) >> str("'") >>
+      (str("'").absent? >> any).repeat(1).as(:title_attr) >>
+      str("'")
+    )
+  }
+  rule(:bracket_body_with_title) {
+    bracket_body_with_title_double_quote | bracket_body_with_title_single_quote
   }
   rule(:bracket_body) {
     bracket_body_with_title | bracket_body_link_only
@@ -238,8 +255,8 @@ class FederacyMarkdownParser < Parslet::Parser
 
   rule(:footer_reference_title_single_quote) {
     whitespace.repeat >>
-    str('\'') >> (str('\'').absent? >> any).repeat(1).as(:title_attr) >>
-    str('\'')
+    str("'") >> (str("'").absent? >> any).repeat(1).as(:title_attr) >>
+    str("'")
   }
 
   rule(:footer_reference_title_bracket) {
@@ -259,14 +276,37 @@ class FederacyMarkdownParser < Parslet::Parser
     angle_open >> angle_body.as(:link) >> angle_close >>
     footer_reference_title.maybe
   }
-  rule(:footer_reference_without_angles_with_title) {
+  rule(:footer_reference_without_angles_with_title_double_quote) {
     footer_reference_start >>
     (
       (
         match("\s").repeat(1) >> str('"')
       ).absent? >> eol?.absent? >> any
     ).repeat(1).as(:link) >>
-    footer_reference_title
+    footer_reference_title_double_quote
+  }
+  rule(:footer_reference_without_angles_with_title_single_quote) {
+    footer_reference_start >>
+    (
+      (
+        match("\s").repeat(1) >> str("'")
+      ).absent? >> eol?.absent? >> any
+    ).repeat(1).as(:link) >>
+    footer_reference_title_single_quote
+  }
+  rule(:footer_reference_without_angles_with_title_bracket) {
+    footer_reference_start >>
+    (
+      (
+        match("\s").repeat(1) >> str('(')
+      ).absent? >> eol?.absent? >> any
+    ).repeat(1).as(:link) >>
+    footer_reference_title_bracket
+  }
+  rule(:footer_reference_without_angles_with_title) {
+    footer_reference_without_angles_with_title_double_quote |
+    footer_reference_without_angles_with_title_single_quote |
+    footer_reference_without_angles_with_title_bracket
   }
 
   rule(:footer_reference_without_angles) {
