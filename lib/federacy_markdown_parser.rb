@@ -361,21 +361,61 @@ class FederacyMarkdownParser < Parslet::Parser
   # We need to match these as things that look like links inside code blocks
   # aren't really links
   ##
-  rule(:code_delim) { str('`') }
-  rule(:code_block_delim) { code_delim >> code_delim >> code_delim }
+  rule(:backtick) { str('`') }
+  rule(:backticks) { backtick >> backtick >> backtick }
+  rule(:tilde) { str('~') }
+  rule(:tildes) { tilde >> tilde >> tilde }
+  rule(:code_tab) { str("\t") | str("    ") }
+  rule(:same_line?) { (new_line.absent? >> any).repeat(0) }
 
-  rule(:inline_code?) { (code_delim.absent? >> any).repeat }
+  rule(:inline_code?) { (backtick.absent? >> any).repeat(1) }
+  rule(:inline_code_block_unquoted) {
+    backtick >> inline_code? >> backtick
+  }
+  rule(:inline_code_block_quoted) {
+    backtick.repeat(1).capture(:backticks) >>
+    dynamic do |source, context|
+      (str(context.captures[:backticks]).absent? >> any).repeat(0) >>
+      str(context.captures[:backticks])
+    end
+  }
   rule(:inline_code_block) {
-    (code_delim >> (code_delim | inline_code? >> code_delim)).as(:inline_code)
+    (inline_code_block_unquoted | inline_code_block_quoted).as(:inline_code)
   }
 
-  rule(:code?) { (code_block_end.absent? >> any).repeat }
-  rule(:code_block_start) {
-    code_block_delim >> (new_line.absent? >> any).repeat(0) >> new_line
+  rule(:code_block_backtick) {
+    backticks >> same_line? >> new_line >>
+    ((new_line >> backticks >> eol?).absent? >> any).repeat >>
+    (new_line >> backticks >> eol? | eof?)
   }
-  rule(:code_block_end) { new_line >> code_block_delim >> eol? }
+  rule(:code_block_tilde) {
+      tildes >> same_line? >> new_line >>
+      ((new_line >> tildes >> eol?).absent? >> any).repeat >>
+      (new_line >> tildes >> eol? | eof?)
+  }
+  rule(:code_block_whitespace_sof) {
+    dynamic do |source, context|
+      if source.pos.charpos == 0
+        match('.').present?
+      else
+        match('.').absent?
+      end
+    end >>
+    (code_tab >> same_line? >> new_line.maybe).repeat(1)
+  }
+  rule(:code_block_whitespace_newline) {
+    match("\s").repeat >> new_line >>
+    (code_tab >> same_line? >> new_line.maybe).repeat(1)
+  }
+  rule(:code_block_whitespace) {
+    code_block_whitespace_newline | code_block_whitespace_sof
+  }
   rule(:code_block) {
-    (code_block_start >> code? >> code_block_end).as(:code_block)
+    (
+      code_block_backtick |
+      code_block_tilde |
+      code_block_whitespace
+    ).as(:code_block)
   }
 
 

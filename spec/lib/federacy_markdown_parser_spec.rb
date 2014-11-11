@@ -3,66 +3,35 @@ require 'federacy_markdown_parser'
 
 describe FederacyMarkdownParser do
 
-  def pluck_tree key_names, obj
-    key_names = [key_names] unless key_names.respond_to? :each
-    res = {}
-    Class.new(Parslet::Transform) do
-      key_names.each do |key_name|
-        rule(key_name => subtree(:x)) do |dictionary|
-          if res[key_name].respond_to? :push
-            res[key_name] << dictionary[:x]
-          elsif res[key_name].present?
-            res[key_name] = [res[key_name], dictionary[:x]]
-          else
-            res[key_name] = dictionary[:x]
-          end
-        end
-      end
-    end.new.apply(obj)
-    res
-  end
-
   let(:parser) { FederacyMarkdownParser.new }
 
   describe 'standard markdown links' do
     it 'should parse standard markdown links' do
-      expect(pluck_tree(
-        :standard_link, parser.parse("Foo bar [title here](/link/here)")
-      )).to include({
+      expect(parser.parse("Foo bar [title here](/link/here)")).to contain_parsed_output({
         standard_link: { title: 'title here', link: '/link/here' }
       })
 
-      expect(pluck_tree(
-        :standard_link, parser.parse("[title here](/link/here)")
-      )).to include({
+      expect(parser.parse("[title here](/link/here)")).to contain_parsed_output({
         standard_link: { title: 'title here', link: '/link/here' }
       })
 
-      expect(pluck_tree(
-        :standard_link, parser.parse("[title here](/link/here) Foo bar")
-      )).to include({
+      expect(parser.parse("[title here](/link/here) Foo bar")).to contain_parsed_output({
         standard_link: { title: 'title here', link: '/link/here' }
       })
     end
 
     it 'should support title attributes' do
-      expect(pluck_tree(
-        :standard_link, parser.parse("[title here](/link/here \"alt\")")
-      )).to include({
+      expect(parser.parse("[title here](/link/here \"alt\")")).to contain_parsed_output({
         standard_link: { title: 'title here', link: '/link/here', title_attr: 'alt' }
       })
 
-      expect(pluck_tree(
-        :standard_link, parser.parse("[title here](/link/here 'alt')")
-      )).to include({
+      expect(parser.parse("[title here](/link/here 'alt')")).to contain_parsed_output({
         standard_link: { title: 'title here', link: '/link/here', title_attr: 'alt' }
       })
     end
 
     it 'should support image links' do
-      expect(pluck_tree(
-        :standard_link, parser.parse("[![img](/img/link)](/link/here 'alt')")
-      )).to include({
+      expect(parser.parse("[![img](/img/link)](/link/here 'alt')")).to contain_parsed_output({
         standard_link: {
           image_link: { title: 'img', link: '/img/link' },
           link: '/link/here',
@@ -70,10 +39,9 @@ describe FederacyMarkdownParser do
         }
       })
 
-      expect(pluck_tree(
-        [:standard_link, :footer_reference],
+      expect(
         parser.parse("[![img][ref]](/link/here 'alt')\n[ref]: /img/link")
-      )).to include({
+      ).to contain_parsed_output({
         standard_link: {
           footer_image: { title: 'img', reference: 'ref' },
           link: '/link/here',
@@ -86,94 +54,83 @@ describe FederacyMarkdownParser do
 
   describe 'footer links' do
     it 'should parse standard links in footer reference format' do
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[title here][ref] Foo bar \n\n[ref]: /link/here")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title: 'title here', reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
 
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[title here]   [ref] Foo bar \n\n[ref]: /link/here")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title: 'title here', reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
 
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title_and_reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
 
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[ref] Foo bar \n\n[ref]: </link/here>")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title_and_reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
 
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[ref][] Foo bar \n\n[ref]: /link/here")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title_and_reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
     end
 
     it 'should support title attributes' do
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here \"alt\"")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title_and_reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
 
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here 'alt'")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title_and_reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
 
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here (alt)")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title_and_reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
 
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here\n   \"alt\"")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title_and_reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
 
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[ref] Foo bar \n\n[ref]: </link/here>   \"alt\"")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { title_and_reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
     end
 
     it 'should support image links' do
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[![img]][ref] Foo bar \n\n[ref]: </link/here>   \"alt\"\n[img]: /img/link")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { footer_image: { title_and_reference: 'img' }, reference: 'ref' },
         footer_reference: [
           { link: '/link/here', reference: 'ref', title_attr: 'alt' },
@@ -181,10 +138,9 @@ describe FederacyMarkdownParser do
         ]
       })
 
-      expect(pluck_tree(
-        [:footer_link, :footer_reference],
+      expect(
         parser.parse("[![img](/img/link)][ref] Foo bar \n\n[ref]: </link/here>   \"alt\"")
-      )).to eq({
+      ).to contain_parsed_output({
         footer_link: { image_link: { title: 'img', link: '/img/link' }, reference: 'ref' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
@@ -193,37 +149,117 @@ describe FederacyMarkdownParser do
 
   describe 'images' do
     it 'should support regular images' do
-      expect(pluck_tree(
-        :image_link,
-        parser.parse("![img](/img/link)")
-      )).to eq({
+      expect(parser.parse("![img](/img/link)")).to contain_parsed_output({
         image_link: { title: 'img', link: '/img/link' }
       })
     end
 
     it 'should support images with title attributes' do
-      expect(pluck_tree(
-        :image_link,
-        parser.parse("![img](/img/link \"alt\")")
-      )).to eq({
+      expect(parser.parse("![img](/img/link \"alt\")")).to contain_parsed_output({
         image_link: { title: 'img', link: '/img/link', title_attr: 'alt' }
       })
 
-      expect(pluck_tree(
-        :image_link,
-        parser.parse("![img](/img/link 'alt')")
-      )).to eq({
+      expect(parser.parse("![img](/img/link 'alt')")).to contain_parsed_output({
         image_link: { title: 'img', link: '/img/link', title_attr: 'alt' }
       })
     end
 
     it 'should support images by reference' do
-      expect(pluck_tree(
-        [:footer_image, :footer_reference],
-        parser.parse("![img][ref]\n[ref]: /img/link 'alt'")
-      )).to eq({
+      expect(parser.parse("![img][ref]\n[ref]: /img/link 'alt'")).to contain_parsed_output({
         footer_image: { title: 'img', reference: 'ref' },
         footer_reference: { link: '/img/link', title_attr: 'alt', reference: 'ref' }
+      })
+    end
+  end
+
+  describe 'code blocks' do
+    it 'should recognise code blocks' do
+      expect(parser.parse("```\nfoo\n```")).to contain_parsed_output({
+        code_block: "```\nfoo\n```"
+      })
+
+      expect(parser.parse("```code_type\nfoo\n```")).to contain_parsed_output({
+        code_block: "```code_type\nfoo\n```"
+      })
+
+      expect(parser.parse("~~~\nfoo\n~~~")).to contain_parsed_output({
+        code_block: "~~~\nfoo\n~~~"
+      })
+
+      expect(parser.parse("~~~code_type\nfoo\n~~~")).to contain_parsed_output({
+        code_block: "~~~code_type\nfoo\n~~~"
+      })
+
+      expect(parser.parse("```\nfoo")).to contain_parsed_output({
+        code_block: "```\nfoo"
+      })
+
+      expect(parser.parse("~~~\nfoo")).to contain_parsed_output({
+        code_block: "~~~\nfoo"
+      })
+
+      expect(parser.parse("    foo")).to contain_parsed_output({
+        code_block: "    foo"
+      })
+
+      expect(parser.parse("\n    foo")).to contain_parsed_output({
+        code_block: "\n    foo"
+      })
+
+      expect(parser.parse(" \n    foo")).to contain_parsed_output({
+        code_block: " \n    foo"
+      })
+
+      expect(parser.parse("    foo\n    bar")).to contain_parsed_output({
+        code_block: "    foo\n    bar"
+      })
+
+      expect(parser.parse("    foo\nbar")).to contain_parsed_output({
+        code_block: "    foo\n"
+      })
+
+      expect(parser.parse("foo\nbar\n\n    foo\nbar")).to contain_parsed_output({
+        code_block: "\n    foo\n"
+      })
+    end
+
+    it 'should not recognise things that are not code blocks' do
+      expect(parser.parse("bar\n    foo")).to contain_parsed_output({
+        text: ["bar", "    foo"]
+      })
+    end
+
+    it 'should recognise inline code blocks' do
+      expect(parser.parse("`foo`")).to contain_parsed_output({
+        inline_code: '`foo`'
+      })
+
+      expect(parser.parse("`foo\nbar`")).to contain_parsed_output({
+        inline_code: "`foo\nbar`"
+      })
+
+      expect(parser.parse("``foo`bar``")).to contain_parsed_output({
+        inline_code: "``foo`bar``"
+      })
+
+      expect(parser.parse("`````foo``bar`````")).to contain_parsed_output({
+        inline_code: "`````foo``bar`````"
+      })
+
+      expect(parser.parse("`````foo``bar```")).to contain_parsed_output({
+        inline_code: "```foo``bar```"
+      })
+    end
+
+    it 'shouldn\'t recognise links inside code blocks' do
+      expect(parser.parse("```foo\nbar [link](/link)\n```")).to contain_parsed_output({
+        code_block: "```foo\nbar [link](/link)\n```"
+      })
+    end
+
+    it 'shouldn\'t recognise links inside inline code blocks' do
+      expect(parser.parse("`[foo](bar)`")).to contain_parsed_output({
+        inline_code: "`[foo](bar)`"
       })
     end
   end
