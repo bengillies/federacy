@@ -49,6 +49,17 @@ describe FederacyMarkdownParser do
         },
         footer_reference: { reference: 'ref', link: '/img/link' }
       })
+
+      expect(
+        parser.parse("[![imgref]](/link/here 'alt')\n[imgref]: /img/link")
+      ).to contain_parsed_output({
+        standard_link: {
+          footer_image: { title_and_reference: 'imgref' },
+          link: '/link/here',
+          title_attr: 'alt'
+        },
+        footer_reference: { reference: 'imgref', link: '/img/link' }
+      })
     end
   end
 
