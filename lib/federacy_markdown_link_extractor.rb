@@ -69,7 +69,7 @@ class FederacyMarkdownLinkExtractor
         atom.except!(*(atom.keys & LINK_TYPES).each do |key|
           found << { type: key, value: atom[key] }
         end)
-        atom.values.each {|value| unprocessed << value }
+        atom.values.each {|value| unprocessed << value if value.respond_to? :to_a }
       else
         unprocessed = unprocessed.concat atom
       end
