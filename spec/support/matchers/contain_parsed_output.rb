@@ -1,7 +1,7 @@
 RSpec::Matchers.define :contain_parsed_output do |expected|
   match do |actual|
     actual_output = pluck_keys expected.keys, actual
-    actual_output.should eq(expected)
+    expect(actual_output).to eq(expected)
   end
 
   def pluck_keys key_names, obj

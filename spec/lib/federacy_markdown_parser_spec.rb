@@ -264,4 +264,197 @@ describe FederacyMarkdownParser do
     end
   end
 
+  describe 'tiddlylinks' do
+    it 'should support basic tiddly links' do
+      expect(parser.parse('[[foo link]]')).to contain_parsed_output({
+        tiddler_link: { link: 'foo link' }
+      })
+    end
+
+    it 'should support basic tiddly links with titles' do
+      expect(parser.parse('[[the title|foo link]]')).to contain_parsed_output({
+        tiddler_link: { link: 'foo link', title: 'the title' }
+      })
+    end
+
+    it 'should support basic space links' do
+      expect(parser.parse('@space-name')).to contain_parsed_output({
+        space_link: { link: 'space-name' }
+      })
+    end
+
+    it 'should support complex space links' do
+      expect(parser.parse('@[[space name]]')).to contain_parsed_output({
+        space_link: { link: 'space name' }
+      })
+
+      expect(parser.parse('@[[title|space name]]')).to contain_parsed_output({
+        space_link: { title: 'title', link: 'space name' }
+      })
+    end
+
+    it 'should support basic space tiddler links' do
+      expect(parser.parse('tiddler-name@space-name')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { link: 'tiddler-name' },
+          space_link: { link: 'space-name' }
+        }
+      })
+    end
+
+    it 'should support complex space tiddler links' do
+      expect(parser.parse('[[tiddler name]]@space-name')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { link: 'tiddler name' },
+          space_link: { link: 'space-name' }
+        }
+      })
+
+      expect(parser.parse('[[title|tiddler name]]@space-name')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { title: 'title', link: 'tiddler name' },
+          space_link: { link: 'space-name' }
+        }
+      })
+
+      expect(parser.parse('tiddler-name@[[space name]]')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { link: 'tiddler-name' },
+          space_link: { link: 'space name' }
+        }
+      })
+
+      expect(parser.parse('[[tiddler name]]@[[space name]]')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { link: 'tiddler name' },
+          space_link: { link: 'space name' }
+        }
+      })
+
+      expect(parser.parse('[[title|tiddler name]]@[[space name]]')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { title: 'title', link: 'tiddler name' },
+          space_link: { link: 'space name' }
+        }
+      })
+    end
+
+    it 'should support basic user space links' do
+      expect(parser.parse('@user-name:space-name')).to contain_parsed_output({
+        space_link: { user: 'user-name', link: 'space-name' }
+      })
+    end
+
+    it 'should support complex user space links' do
+      expect(parser.parse('@[[user name:space name]]')).to contain_parsed_output({
+        space_link: { user: 'user name', link: 'space name' }
+      })
+
+      expect(parser.parse('@[[title|user name:space name]]')).to contain_parsed_output({
+        space_link: { title: 'title', user: 'user name', link: 'space name' }
+      })
+    end
+
+    it 'should support basic user space tiddler links' do
+      expect(parser.parse('tiddler-name@user-name:space-name')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { link: 'tiddler-name' },
+          space_link: { user: 'user-name', link: 'space-name' }
+        }
+      })
+    end
+
+    it 'should support complex user space tiddler links' do
+      expect(parser.parse('[[tiddler name]]@user-name:space-name')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { link: 'tiddler name' },
+          space_link: { user: 'user-name', link: 'space-name' }
+        }
+      })
+
+      expect(parser.parse('[[title|tiddler name]]@user-name:space-name')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { title: 'title', link: 'tiddler name' },
+          space_link: { user: 'user-name', link: 'space-name' }
+        }
+      })
+
+      expect(parser.parse('[[title|tiddler name]]@[[user name:space name]]')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { title: 'title', link: 'tiddler name' },
+          space_link: { user: 'user name', link: 'space name' }
+        }
+      })
+
+      expect(parser.parse('[[tiddler name]]@[[user name:space name]]')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { link: 'tiddler name' },
+          space_link: { user: 'user name', link: 'space name' }
+        }
+      })
+
+      expect(parser.parse('tiddler-name@[[user name:space name]]')).to contain_parsed_output({
+        tiddler_space_link: {
+          tiddler_link: { link: 'tiddler-name' },
+          space_link: { user: 'user name', link: 'space name' }
+        }
+      })
+    end
+  end
+
+  describe 'transclusions' do
+    it 'should handle simple transclusions' do
+      expect(parser.parse('{{{tiddler title}}}')).to contain_parsed_output({
+        transclusion: { link: 'tiddler title' }
+      })
+
+      expect(parser.parse("foo\n{{{tiddler title}}}\nbar")).to contain_parsed_output({
+        transclusion: { link: 'tiddler title' }
+      })
+
+      expect(parser.parse("\n{{{tiddler title}}}")).to contain_parsed_output({
+        transclusion: { link: 'tiddler title' }
+      })
+    end
+
+    it 'should not recognise transclusions that are not at the block level' do
+      expect(parser.parse("foo {{{tiddler title}}}")).to contain_parsed_output({
+        text: "foo {{{tiddler title}}}"
+      })
+    end
+
+    it 'should handle transclusions using tiddly links' do
+      expect(parser.parse('{{{[[tiddler title]]}}}')).to contain_parsed_output({
+        transclusion: { tiddler_link: { link: 'tiddler title' } }
+      })
+
+      expect(parser.transclusion.parse('{{{tiddler-title@space}}}')).to contain_parsed_output({
+        transclusion: {
+          tiddler_space_link: {
+            tiddler_link: { link: 'tiddler-title' },
+            space_link: { link: 'space' }
+          }
+        }
+      })
+
+      expect(parser.transclusion.parse('{{{tiddler-title@user:space}}}')).to contain_parsed_output({
+        transclusion: {
+          tiddler_space_link: {
+            tiddler_link: { link: 'tiddler-title' },
+            space_link: { user: 'user', link: 'space' }
+          }
+        }
+      })
+
+      expect(parser.parse('{{{[[tiddler title]]@[[user name:space name]]}}}')).to contain_parsed_output({
+        transclusion: {
+          tiddler_space_link: {
+            tiddler_link: { link: 'tiddler title' },
+            space_link: { user: 'user name', link: 'space name' }
+          }
+        }
+      })
+    end
+  end
+
 end

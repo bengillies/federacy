@@ -64,15 +64,18 @@ class FederacyMarkdownParser < Parslet::Parser
   rule(:link_user_separator) { str(':') }
   rule(:space_symbol) { str('@') }
 
+  rule(:link_title) {
+    (
+      link_title_separator.absent? >> eol?.absent? >> any
+    ).repeat(1).as(:title) >>
+    link_title_separator
+  }
+
   rule(:link_body_simple) {
     (link_close.absent? >> eol?.absent? >> any).repeat(1).as(:link)
   }
   rule(:link_body_with_title) {
-    (
-      link_title_separator.absent? >> eol?.absent? >> any
-    ).repeat(1).as(:title) >>
-    link_title_separator >>
-    link_body_simple
+    link_title >> link_body_simple
   }
   rule(:tiddler_link_body) {
     link_body_with_title |
@@ -104,6 +107,8 @@ class FederacyMarkdownParser < Parslet::Parser
   }
 
   rule(:space_link_body) {
+    link_open >> link_title >> link_user_body >> link_body_simple >> link_close |
+    link_open >> link_title >> link_body_simple >> link_close |
     link_open >> link_user_body >> link_body_simple >> link_close |
     link_open >> link_body_simple >> link_close |
     link_user_word >> link_word |
@@ -113,8 +118,15 @@ class FederacyMarkdownParser < Parslet::Parser
     (space_symbol >> space_link_body).as(:space_link)
   }
 
+
+  rule(:tiddler_link_unbracketed) {
+    (
+      (space_symbol.absent? >> whitespace.absent? >> any).repeat(1).as(:link)
+    ).as(:tiddler_link)
+  }
+
   rule(:tiddler_space_link) {
-    (tiddler_link >> space_link).as(:tiddler_space_link)
+    ((tiddler_link | tiddler_link_unbracketed) >> space_link).as(:tiddler_space_link)
   }
 
   rule(:tiddlylink) {
@@ -332,9 +344,41 @@ class FederacyMarkdownParser < Parslet::Parser
   #
   # {{{[[Abraham Lincoln]]@jon-wilkes-booth:people-to-kill}}}
   ##
+
+  rule(:space_link_insude_transclusion) {
+    (
+      space_symbol >>
+      (
+        (
+          link_user_separator.absent? >>
+          link_open.absent? >>
+          eol?.absent? >>
+          transclusion_end.absent? >>
+          any
+        ).repeat(1).as(:user) >>
+        link_user_separator
+      ).maybe >>
+      (
+        whitespace.absent? >>
+        transclusion_end.absent? >>
+        link_open.absent? >>
+        any
+      ).repeat(1).as(:link)
+    ).as(:space_link)
+  }
+  rule(:tiddlylink_inside_transclusion) {
+    # handle tiddlylinks where the user/space name isn't enclosed in square brackets
+    (
+      (tiddler_link | tiddler_link_unbracketed) >>
+      space_link_insude_transclusion
+    ).as(:tiddler_space_link) |
+    space_link_insude_transclusion.as(:space_link)
+  }
+
   rule(:transclusion_start) { str('{{{') }
   rule(:transclusion_end) { str('}}}') }
   rule(:transclusion_tiddler) {
+    tiddlylink_inside_transclusion | # TODO: implement tiddlylink_inside_transclusion
     tiddlylink |
     (transclusion_end.absent? >> eol?.absent? >> any).repeat(1).as(:link)
   }
@@ -342,7 +386,7 @@ class FederacyMarkdownParser < Parslet::Parser
     (
       transclusion_start >>
       transclusion_tiddler >>
-      transclusion_end >> eol? >> eol?
+      transclusion_end >> eol?
     ).as(:transclusion)
   }
 
