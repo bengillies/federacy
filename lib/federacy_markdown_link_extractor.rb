@@ -91,6 +91,11 @@ class FederacyMarkdownLinkExtractor
     link
   end
 
+  def has_image? link
+    return :image_link if link[:image_link]
+    return :footer_image if  link[:footer_image]
+  end
+
   def transform
     flatten.map do |link|
       transformer = "format_#{link[:type].to_s}"
@@ -107,7 +112,8 @@ class FederacyMarkdownLinkExtractor
       link_type: :transclusion,
       tiddler: link[:link] || tiddler_link[:link],
       space: space_link[:link],
-      user: space_link[:user]
+      user: space_link[:user],
+      title: link[:link] || tiddler_link[:link]
     }
   end
 
@@ -116,7 +122,8 @@ class FederacyMarkdownLinkExtractor
       link_type: :tiddler_link,
       tiddler: link[:tiddler_link][:link],
       space: link[:space_link][:link],
-      user: link[:space_link][:user]
+      user: link[:space_link][:user],
+      title: link[:tiddler_link][:title] || link[:tiddler_link][:link]
     }
   end
 
@@ -125,7 +132,8 @@ class FederacyMarkdownLinkExtractor
       link_type: :space_link,
       tiddler: nil,
       space: link[:link],
-      user: link[:user]
+      user: link[:user],
+      title: link[:title] || link[:link]
     }
   end
 
@@ -134,7 +142,8 @@ class FederacyMarkdownLinkExtractor
       link_type: :tiddler_link,
       tiddler: link[:link],
       space: nil,
-      user: nil
+      user: nil,
+      title: link[:title] || link[:link]
     }
   end
 
@@ -142,35 +151,34 @@ class FederacyMarkdownLinkExtractor
     link_target = reference_link(link[:reference] || link[:title_and_reference])
     links = []
 
-    links << format_image_link(link[:image_link]) if link[:image_link]
-    links << format_footer_image(link[:footer_image]) if link[:footer_image]
+    links << image = send("format_#{has_image? link}", link) if has_image? link
 
     if link_target
       links << {
         link_type: :markdown_link,
-        link: link_target
+        link: link_target,
+        title: link[:title] || (image && image[:title]) || link[:title_and_reference]
       }
     end
   end
 
-# TODO: add titles into link objects; change {tiddler,space_user}_link to tiddlylink
-
   def format_standard_link link
     links = []
 
-    links << format_image_link(link[:image_link]) if link[:image_link]
-    links << format_footer_image(link[:footer_image]) if link[:footer_image]
+    links << image = send("format_#{has_image? link}", link) if has_image? link
 
     links << {
       link_type: :markdown_link,
-      link: link[:link]
+      link: link[:link],
+      title: link[:title] || (image && image[:title])
     }
   end
 
   def format_image_link link
     {
       link_type: :markdown_image,
-      link: link[:link]
+      link: link[:link],
+      title: link[:title]
     }
   end
 
@@ -179,7 +187,8 @@ class FederacyMarkdownLinkExtractor
     if link_target
       {
         link_type: :markdown_image,
-        link: link_target
+        link: link_target,
+        title: link[:title] || link[:title_and_reference]
       }
     end
   end
