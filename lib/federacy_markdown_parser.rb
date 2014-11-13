@@ -58,11 +58,11 @@ class FederacyMarkdownParser < Parslet::Parser
   #   - [[link to tiddler]]@[[user:space]]
   #   - [[title|link to tiddler]]@[[user:space]]
   ##
-  rule(:link_open) { str('[[') }
-  rule(:link_close) { str(']]') }
+  rule(:link_open) { str('[[').as(:open) }
+  rule(:link_close) { str(']]').as(:close) }
   rule(:link_title_separator) { str('|') }
   rule(:link_user_separator) { str(':') }
-  rule(:space_symbol) { str('@') }
+  rule(:space_symbol) { str('@').as(:at) }
 
   rule(:link_title) do
     (
@@ -151,7 +151,7 @@ class FederacyMarkdownParser < Parslet::Parser
     (square_close.absent? >> image_link.absent? >> any).repeat(1)
   end
   rule(:square_link) do
-    square_open >> square_body.as(:title) >> square_close >> str(' ').maybe
+    square_open.as(:open) >> square_body.as(:title) >> square_close >> str(' ').maybe
   end
   rule(:bracket_body_link_only) do
     (bracket_close.absent? >> any).repeat(1).as(:link)
@@ -187,32 +187,33 @@ class FederacyMarkdownParser < Parslet::Parser
     bracket_body_with_title | bracket_body_link_only
   end
   rule(:bracket_section) do
-    bracket_open >> bracket_body >> bracket_close
+    bracket_open >> bracket_body >> bracket_close.as(:close)
   end
   rule(:markdown_base_link) do
     square_link >> bracket_section
   end
   rule(:standard_reference_base) do
-    square_open >> square_body.as(:title) >> square_close >>
+    square_open.as(:open) >> square_body.as(:title) >> square_close >>
     match("\s").repeat >>
-    square_open >> square_body.as(:reference) >> square_close
+    square_open >> square_body.as(:reference) >> square_close.as(:close)
   end
 
   rule(:simple_reference_base) do
-    square_open >> square_body.as(:title_and_reference) >> square_close
+    square_open.as(:open) >>
+    square_body.as(:title_and_reference) >>
+    (square_close >> (match("\s").repeat >> str('[]')).maybe).as(:close)
   end
   rule(:standard_image) do
-    (exclamation_mark >> markdown_base_link).as(:image_link)
-  end
-  rule(:standard_image_with_title) do
-    (exclamation_mark >> square_link >> bracket_body_with_title).as(:image_link)
+    (exclamation_mark.as(:image_open) >> markdown_base_link).as(:image_link)
   end
   rule(:footer_image) do
-    exclamation_mark >>
-    (standard_reference_base | simple_reference_base).as(:footer_image)
+    (
+      exclamation_mark.as(:image_open) >>
+      (standard_reference_base | simple_reference_base)
+    ).as(:footer_image)
   end
   rule(:square_with_image) do
-    square_open >> image_link >> square_close >> str(' ').maybe
+    square_open.as(:open) >> image_link >> square_close >> str(' ').maybe
   end
 
   rule(:standard_link) do
@@ -224,18 +225,16 @@ class FederacyMarkdownParser < Parslet::Parser
 
   rule(:image_link) do
     standard_image |
-    footer_image >> bracket_section.absent? |
-    standard_image_with_title
+    footer_image >> bracket_section.absent?
   end
 
   rule(:footer_link) do
     (
       (
         square_with_image >> match("\s").repeat >>
-        square_open >> square_body.as(:reference) >> square_close
+        square_open >> square_body.as(:reference) >> square_close.as(:close)
       ) |
       standard_reference_base |
-      square_with_image |
       simple_reference_base
     ).as(:footer_link)
   end
@@ -375,8 +374,8 @@ class FederacyMarkdownParser < Parslet::Parser
     space_link_insude_transclusion.as(:space_link)
   end
 
-  rule(:transclusion_start) { str('{{{') }
-  rule(:transclusion_end) { str('}}}') }
+  rule(:transclusion_start) { str('{{{').as(:open) }
+  rule(:transclusion_end) { str('}}}').as(:close) }
   rule(:transclusion_tiddler) do
     tiddlylink_inside_transclusion |
     tiddlylink |

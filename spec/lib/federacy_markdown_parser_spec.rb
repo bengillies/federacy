@@ -8,34 +8,36 @@ describe FederacyMarkdownParser do
   describe 'standard markdown links' do
     it 'should parse standard markdown links' do
       expect(parser.parse("Foo bar [title here](/link/here)")).to contain_parsed_output({
-        standard_link: { title: 'title here', link: '/link/here' }
+        standard_link: { open: '[', title: 'title here', link: '/link/here', close: ')' }
       })
 
       expect(parser.parse("[title here](/link/here)")).to contain_parsed_output({
-        standard_link: { title: 'title here', link: '/link/here' }
+        standard_link: { open: '[', title: 'title here', link: '/link/here', close: ')' }
       })
 
       expect(parser.parse("[title here](/link/here) Foo bar")).to contain_parsed_output({
-        standard_link: { title: 'title here', link: '/link/here' }
+        standard_link: { open: '[', title: 'title here', link: '/link/here', close: ')' }
       })
     end
 
     it 'should support title attributes' do
       expect(parser.parse("[title here](/link/here \"alt\")")).to contain_parsed_output({
-        standard_link: { title: 'title here', link: '/link/here', title_attr: 'alt' }
+        standard_link: { open: '[', title: 'title here', link: '/link/here', title_attr: 'alt', close: ')' }
       })
 
       expect(parser.parse("[title here](/link/here 'alt')")).to contain_parsed_output({
-        standard_link: { title: 'title here', link: '/link/here', title_attr: 'alt' }
+        standard_link: { open: '[', title: 'title here', link: '/link/here', title_attr: 'alt', close: ')' }
       })
     end
 
     it 'should support image links' do
       expect(parser.parse("[![img](/img/link)](/link/here 'alt')")).to contain_parsed_output({
         standard_link: {
-          image_link: { title: 'img', link: '/img/link' },
+          image_link: { image_open: '!', open: '[', title: 'img', link: '/img/link', close: ')' },
+          open: '[',
           link: '/link/here',
-          title_attr: 'alt'
+          title_attr: 'alt',
+          close: ')'
         }
       })
 
@@ -43,20 +45,24 @@ describe FederacyMarkdownParser do
         parser.parse("[![img][ref]](/link/here 'alt')\n[ref]: /img/link")
       ).to contain_parsed_output({
         standard_link: {
-          footer_image: { title: 'img', reference: 'ref' },
+          footer_image: { open: '[',image_open: '!',  title: 'img', reference: 'ref', close: ']' },
           link: '/link/here',
-          title_attr: 'alt'
+          title_attr: 'alt',
+          open: '[',
+          close: ')'
         },
         footer_reference: { reference: 'ref', link: '/img/link' }
       })
 
       expect(
-        parser.parse("[![imgref]](/link/here 'alt')\n[imgref]: /img/link")
+        parser.parse("[![imgref][]](/link/here 'alt')\n[imgref]: /img/link")
       ).to contain_parsed_output({
         standard_link: {
-          footer_image: { title_and_reference: 'imgref' },
+          footer_image: { open: '[', image_open: '!', title_and_reference: 'imgref', close: '][]' },
           link: '/link/here',
-          title_attr: 'alt'
+          title_attr: 'alt',
+          open: '[',
+          close: ')'
         },
         footer_reference: { reference: 'imgref', link: '/img/link' }
       })
@@ -68,35 +74,35 @@ describe FederacyMarkdownParser do
       expect(
         parser.parse("[title here][ref] Foo bar \n\n[ref]: /link/here")
       ).to contain_parsed_output({
-        footer_link: { title: 'title here', reference: 'ref' },
+        footer_link: { open: '[', title: 'title here', reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
 
       expect(
         parser.parse("[title here]   [ref] Foo bar \n\n[ref]: /link/here")
       ).to contain_parsed_output({
-        footer_link: { title: 'title here', reference: 'ref' },
+        footer_link: { open: '[', title: 'title here', reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
 
       expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here")
       ).to contain_parsed_output({
-        footer_link: { title_and_reference: 'ref' },
+        footer_link: { open: '[', title_and_reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
 
       expect(
         parser.parse("[ref] Foo bar \n\n[ref]: </link/here>")
       ).to contain_parsed_output({
-        footer_link: { title_and_reference: 'ref' },
+        footer_link: { open: '[', title_and_reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
 
       expect(
         parser.parse("[ref][] Foo bar \n\n[ref]: /link/here")
       ).to contain_parsed_output({
-        footer_link: { title_and_reference: 'ref' },
+        footer_link: { open: '[', title_and_reference: 'ref', close: '][]' },
         footer_reference: { link: '/link/here', reference: 'ref' }
       })
     end
@@ -105,35 +111,35 @@ describe FederacyMarkdownParser do
       expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here \"alt\"")
       ).to contain_parsed_output({
-        footer_link: { title_and_reference: 'ref' },
+        footer_link: { open: '[', title_and_reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
 
       expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here 'alt'")
       ).to contain_parsed_output({
-        footer_link: { title_and_reference: 'ref' },
+        footer_link: { open: '[', title_and_reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
 
       expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here (alt)")
       ).to contain_parsed_output({
-        footer_link: { title_and_reference: 'ref' },
+        footer_link: { open: '[', title_and_reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
 
       expect(
         parser.parse("[ref] Foo bar \n\n[ref]: /link/here\n   \"alt\"")
       ).to contain_parsed_output({
-        footer_link: { title_and_reference: 'ref' },
+        footer_link: { open: '[', title_and_reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
 
       expect(
         parser.parse("[ref] Foo bar \n\n[ref]: </link/here>   \"alt\"")
       ).to contain_parsed_output({
-        footer_link: { title_and_reference: 'ref' },
+        footer_link: { open: '[', title_and_reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
     end
@@ -142,7 +148,7 @@ describe FederacyMarkdownParser do
       expect(
         parser.parse("[![img]][ref] Foo bar \n\n[ref]: </link/here>   \"alt\"\n[img]: /img/link")
       ).to contain_parsed_output({
-        footer_link: { footer_image: { title_and_reference: 'img' }, reference: 'ref' },
+        footer_link: { open: '[', footer_image: { open: '[', image_open: '!', title_and_reference: 'img', close: ']' }, reference: 'ref', close: ']' },
         footer_reference: [
           { link: '/link/here', reference: 'ref', title_attr: 'alt' },
           { link: '/img/link', reference: 'img' }
@@ -152,7 +158,7 @@ describe FederacyMarkdownParser do
       expect(
         parser.parse("[![img](/img/link)][ref] Foo bar \n\n[ref]: </link/here>   \"alt\"")
       ).to contain_parsed_output({
-        footer_link: { image_link: { title: 'img', link: '/img/link' }, reference: 'ref' },
+        footer_link: { open: '[', image_link: { open: '[', image_open: '!', title: 'img', link: '/img/link', close: ')' }, reference: 'ref', close: ']' },
         footer_reference: { link: '/link/here', reference: 'ref', title_attr: 'alt' }
       })
     end
@@ -161,23 +167,23 @@ describe FederacyMarkdownParser do
   describe 'images' do
     it 'should support regular images' do
       expect(parser.parse("![img](/img/link)")).to contain_parsed_output({
-        image_link: { title: 'img', link: '/img/link' }
+        image_link: { open: '[', image_open: '!', title: 'img', link: '/img/link', close: ')' }
       })
     end
 
     it 'should support images with title attributes' do
       expect(parser.parse("![img](/img/link \"alt\")")).to contain_parsed_output({
-        image_link: { title: 'img', link: '/img/link', title_attr: 'alt' }
+        image_link: { open: '[', image_open: '!', title: 'img', link: '/img/link', title_attr: 'alt', close: ')' }
       })
 
       expect(parser.parse("![img](/img/link 'alt')")).to contain_parsed_output({
-        image_link: { title: 'img', link: '/img/link', title_attr: 'alt' }
+        image_link: { open: '[', image_open: '!', title: 'img', link: '/img/link', title_attr: 'alt', close: ')' }
       })
     end
 
     it 'should support images by reference' do
       expect(parser.parse("![img][ref]\n[ref]: /img/link 'alt'")).to contain_parsed_output({
-        footer_image: { title: 'img', reference: 'ref' },
+        footer_image: { open: '[', image_open: '!', title: 'img', reference: 'ref', close: ']' },
         footer_reference: { link: '/img/link', title_attr: 'alt', reference: 'ref' }
       })
     end
@@ -278,29 +284,29 @@ describe FederacyMarkdownParser do
   describe 'tiddlylinks' do
     it 'should support basic tiddly links' do
       expect(parser.parse('[[foo link]]')).to contain_parsed_output({
-        tiddler_link: { link: 'foo link' }
+        tiddler_link: { open: '[[', link: 'foo link', close: ']]' }
       })
     end
 
     it 'should support basic tiddly links with titles' do
       expect(parser.parse('[[the title|foo link]]')).to contain_parsed_output({
-        tiddler_link: { link: 'foo link', title: 'the title' }
+        tiddler_link: { open: '[[', link: 'foo link', title: 'the title', close: ']]' }
       })
     end
 
     it 'should support basic space links' do
       expect(parser.parse('@space-name')).to contain_parsed_output({
-        space_link: { link: 'space-name' }
+        space_link: { at: '@', link: 'space-name' }
       })
     end
 
     it 'should support complex space links' do
       expect(parser.parse('@[[space name]]')).to contain_parsed_output({
-        space_link: { link: 'space name' }
+        space_link: { at: '@', open: '[[',  link: 'space name', close: ']]' }
       })
 
       expect(parser.parse('@[[title|space name]]')).to contain_parsed_output({
-        space_link: { title: 'title', link: 'space name' }
+        space_link: { open: '[[', at: '@',  title: 'title', link: 'space name', close: ']]' }
       })
     end
 
@@ -308,7 +314,7 @@ describe FederacyMarkdownParser do
       expect(parser.parse('tiddler-name@space-name')).to contain_parsed_output({
         tiddler_space_link: {
           tiddler_link: { link: 'tiddler-name' },
-          space_link: { link: 'space-name' }
+          space_link: { at: '@', link: 'space-name' }
         }
       })
     end
@@ -316,53 +322,53 @@ describe FederacyMarkdownParser do
     it 'should support complex space tiddler links' do
       expect(parser.parse('[[tiddler name]]@space-name')).to contain_parsed_output({
         tiddler_space_link: {
-          tiddler_link: { link: 'tiddler name' },
-          space_link: { link: 'space-name' }
+          tiddler_link: { open: '[[', link: 'tiddler name', close: ']]' },
+          space_link: { at: '@', link: 'space-name' }
         }
       })
 
       expect(parser.parse('[[title|tiddler name]]@space-name')).to contain_parsed_output({
         tiddler_space_link: {
-          tiddler_link: { title: 'title', link: 'tiddler name' },
-          space_link: { link: 'space-name' }
+          tiddler_link: { open: '[[', title: 'title', link: 'tiddler name', close: ']]' },
+          space_link: { at: '@', link: 'space-name' }
         }
       })
 
       expect(parser.parse('tiddler-name@[[space name]]')).to contain_parsed_output({
         tiddler_space_link: {
           tiddler_link: { link: 'tiddler-name' },
-          space_link: { link: 'space name' }
+          space_link: { at: '@', open: '[[',  link: 'space name', close: ']]' }
         }
       })
 
       expect(parser.parse('[[tiddler name]]@[[space name]]')).to contain_parsed_output({
         tiddler_space_link: {
-          tiddler_link: { link: 'tiddler name' },
-          space_link: { link: 'space name' }
+          tiddler_link: { open: '[[', link: 'tiddler name', close: ']]' },
+          space_link: { open: '[[', at: '@',  link: 'space name', close: ']]' }
         }
       })
 
       expect(parser.parse('[[title|tiddler name]]@[[space name]]')).to contain_parsed_output({
         tiddler_space_link: {
-          tiddler_link: { title: 'title', link: 'tiddler name' },
-          space_link: { link: 'space name' }
+          tiddler_link: { open: '[[', title: 'title', link: 'tiddler name', close: ']]' },
+          space_link: { open: '[[', at: '@',  link: 'space name', close: ']]' }
         }
       })
     end
 
     it 'should support basic user space links' do
       expect(parser.parse('@user-name:space-name')).to contain_parsed_output({
-        space_link: { user: 'user-name', link: 'space-name' }
+        space_link: { at: '@', user: 'user-name', link: 'space-name' }
       })
     end
 
     it 'should support complex user space links' do
       expect(parser.parse('@[[user name:space name]]')).to contain_parsed_output({
-        space_link: { user: 'user name', link: 'space name' }
+        space_link: { at: '@', open: '[[',  user: 'user name', link: 'space name', close: ']]' }
       })
 
       expect(parser.parse('@[[title|user name:space name]]')).to contain_parsed_output({
-        space_link: { title: 'title', user: 'user name', link: 'space name' }
+        space_link: { at: '@', open: '[[',  title: 'title', user: 'user name', link: 'space name', close: ']]' }
       })
     end
 
@@ -370,7 +376,7 @@ describe FederacyMarkdownParser do
       expect(parser.parse('tiddler-name@user-name:space-name')).to contain_parsed_output({
         tiddler_space_link: {
           tiddler_link: { link: 'tiddler-name' },
-          space_link: { user: 'user-name', link: 'space-name' }
+          space_link: { at: '@', user: 'user-name', link: 'space-name' }
         }
       })
     end
@@ -378,36 +384,36 @@ describe FederacyMarkdownParser do
     it 'should support complex user space tiddler links' do
       expect(parser.parse('[[tiddler name]]@user-name:space-name')).to contain_parsed_output({
         tiddler_space_link: {
-          tiddler_link: { link: 'tiddler name' },
-          space_link: { user: 'user-name', link: 'space-name' }
+          tiddler_link: { open: '[[', link: 'tiddler name', close: ']]' },
+          space_link: { at: '@', user: 'user-name', link: 'space-name' }
         }
       })
 
       expect(parser.parse('[[title|tiddler name]]@user-name:space-name')).to contain_parsed_output({
         tiddler_space_link: {
-          tiddler_link: { title: 'title', link: 'tiddler name' },
-          space_link: { user: 'user-name', link: 'space-name' }
+          tiddler_link: { open: '[[', title: 'title', link: 'tiddler name', close: ']]' },
+          space_link: { at: '@', user: 'user-name', link: 'space-name' }
         }
       })
 
       expect(parser.parse('[[title|tiddler name]]@[[user name:space name]]')).to contain_parsed_output({
         tiddler_space_link: {
-          tiddler_link: { title: 'title', link: 'tiddler name' },
-          space_link: { user: 'user name', link: 'space name' }
+          tiddler_link: { open: '[[', title: 'title', link: 'tiddler name', close: ']]' },
+          space_link: { open: '[[', at: '@',  user: 'user name', link: 'space name', close: ']]' }
         }
       })
 
       expect(parser.parse('[[tiddler name]]@[[user name:space name]]')).to contain_parsed_output({
         tiddler_space_link: {
-          tiddler_link: { link: 'tiddler name' },
-          space_link: { user: 'user name', link: 'space name' }
+          tiddler_link: { open: '[[', link: 'tiddler name', close: ']]' },
+          space_link: { open: '[[', at: '@',  user: 'user name', link: 'space name', close: ']]' }
         }
       })
 
       expect(parser.parse('tiddler-name@[[user name:space name]]')).to contain_parsed_output({
         tiddler_space_link: {
           tiddler_link: { link: 'tiddler-name' },
-          space_link: { user: 'user name', link: 'space name' }
+          space_link: { at: '@', open: '[[',  user: 'user name', link: 'space name', close: ']]' }
         }
       })
     end
@@ -416,15 +422,15 @@ describe FederacyMarkdownParser do
   describe 'transclusions' do
     it 'should handle simple transclusions' do
       expect(parser.parse('{{{tiddler title}}}')).to contain_parsed_output({
-        transclusion: { link: 'tiddler title' }
+        transclusion: { open: '{{{', link: 'tiddler title', close: '}}}' }
       })
 
       expect(parser.parse("foo\n{{{tiddler title}}}\nbar")).to contain_parsed_output({
-        transclusion: { link: 'tiddler title' }
+        transclusion: { open: '{{{', link: 'tiddler title', close: '}}}' }
       })
 
       expect(parser.parse("\n{{{tiddler title}}}")).to contain_parsed_output({
-        transclusion: { link: 'tiddler title' }
+        transclusion: { open: '{{{', link: 'tiddler title', close: '}}}' }
       })
     end
 
@@ -436,33 +442,39 @@ describe FederacyMarkdownParser do
 
     it 'should handle transclusions using tiddly links' do
       expect(parser.parse('{{{[[tiddler title]]}}}')).to contain_parsed_output({
-        transclusion: { tiddler_link: { link: 'tiddler title' } }
+        transclusion: { open: '{{{', tiddler_link: { open: '[[', link: 'tiddler title' , close: ']]'}, close: '}}}' }
       })
 
       expect(parser.transclusion.parse('{{{tiddler-title@space}}}')).to contain_parsed_output({
         transclusion: {
+          open: '{{{',
           tiddler_space_link: {
             tiddler_link: { link: 'tiddler-title' },
-            space_link: { link: 'space' }
-          }
+            space_link: { at: '@', link: 'space' }
+          },
+         close: '}}}'
         }
       })
 
       expect(parser.transclusion.parse('{{{tiddler-title@user:space}}}')).to contain_parsed_output({
         transclusion: {
+          open: '{{{',
           tiddler_space_link: {
             tiddler_link: { link: 'tiddler-title' },
-            space_link: { user: 'user', link: 'space' }
-          }
+            space_link: { at: '@', user: 'user', link: 'space' }
+          },
+          close: '}}}'
         }
       })
 
       expect(parser.parse('{{{[[tiddler title]]@[[user name:space name]]}}}')).to contain_parsed_output({
         transclusion: {
+          open: '{{{',
           tiddler_space_link: {
-            tiddler_link: { link: 'tiddler title' },
-            space_link: { user: 'user name', link: 'space name' }
-          }
+            tiddler_link: { open: '[[', link: 'tiddler title', close: ']]' },
+            space_link: { open: '[[', at: '@',  user: 'user name', link: 'space name', close: ']]' }
+          },
+          close: '}}}'
         }
       })
     end
