@@ -104,7 +104,7 @@ class FederacyMarkdownLinkExtractor
   end
 
   def format_transclusion link
-    tiddler_space_link = link[:tiddler_link] || {}
+    tiddler_space_link = link[:tiddler_space_link] || {}
     tiddler_link = link[:tiddler_link] || tiddler_space_link[:tiddler_link]
     space_link = (tiddler_space_link && tiddler_space_link[:space_link]) || {}
 
