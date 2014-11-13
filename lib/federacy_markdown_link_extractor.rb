@@ -119,7 +119,7 @@ class FederacyMarkdownLinkExtractor
 
   def format_tiddler_space_link link
     {
-      link_type: :tiddler_link,
+      link_type: :tiddlylink,
       tiddler: link[:tiddler_link][:link],
       space: link[:space_link][:link],
       user: link[:space_link][:user],
@@ -129,7 +129,7 @@ class FederacyMarkdownLinkExtractor
 
   def format_space_link link
     {
-      link_type: :space_link,
+      link_type: :tiddlylink,
       tiddler: nil,
       space: link[:link],
       user: link[:user],
@@ -139,7 +139,7 @@ class FederacyMarkdownLinkExtractor
 
   def format_tiddler_link link
     {
-      link_type: :tiddler_link,
+      link_type: :tiddlylink,
       tiddler: link[:link],
       space: nil,
       user: nil,
