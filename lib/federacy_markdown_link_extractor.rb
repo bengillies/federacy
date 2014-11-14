@@ -1,8 +1,6 @@
 require 'federacy_markdown_parser'
 
 class FederacyMarkdownLinkExtractor
-  attr_reader :raw_output
-
   # Types of parsed output to recognise:
   #
   # Links:
@@ -52,6 +50,12 @@ class FederacyMarkdownLinkExtractor
     @raw_output = @parser.parse markdown
   end
 
+  def extract_links
+    flatten.map do |link|
+      transformer = "format_#{link[:type].to_s}"
+      send transformer, link[:value] if respond_to? transformer
+    end.flatten.compact
+  end
 
 
   ##
@@ -123,13 +127,6 @@ class FederacyMarkdownLinkExtractor
     ]
   end
 
-  def transform
-    flatten.map do |link|
-      transformer = "format_#{link[:type].to_s}"
-      send transformer, link[:value] if respond_to? transformer
-    end.flatten.compact
-  end
-
   def format_transclusion link
     tiddler_space_link = link[:tiddler_space_link] || {}
     tiddler_link = link[:tiddler_link] || tiddler_space_link[:tiddler_link]
@@ -191,9 +188,10 @@ class FederacyMarkdownLinkExtractor
 
   def format_footer_link link
     link_target = reference_link(link[:reference] || link[:title_and_reference])
+    img_link = has_image?(link)
     links = []
 
-    links << image = send("format_#{has_image? link}", link) if has_image? link
+    links << image = send("format_#{img_link}", link[img_link]) if img_link
 
     if link_target
       startPos, endPos = link_pos(link)
@@ -210,9 +208,10 @@ class FederacyMarkdownLinkExtractor
 
   def format_standard_link link
     startPos, endPos = link_pos(link)
+    img_link = has_image?(link)
     links = []
 
-    links << image = send("format_#{has_image? link}", link) if has_image? link
+    links << image = send("format_#{img_link}", link[img_link]) if img_link
 
     links << {
       start: startPos,
@@ -249,5 +248,4 @@ class FederacyMarkdownLinkExtractor
       }
     end
   end
-
 end
