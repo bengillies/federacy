@@ -442,6 +442,72 @@ describe FederacyMarkdownParser do
     end
   end
 
+  describe 'tiddlyimages' do
+    it 'should support tiddlyimages' do
+      expect(parser.parse('![[foo]]')).to contain_parsed_output({
+        tiddler_image: { image_open: '!', tiddler_link: { open: '[[', link: 'foo', close: ']]' } }
+      })
+
+      expect(parser.parse('![[foo|bar]]')).to contain_parsed_output({
+        tiddler_image: {
+          image_open: '!',
+          tiddler_link: { open: '[[', title: 'foo', link: 'bar', close: ']]' }
+        }
+      })
+
+      expect(parser.parse('!foo@bar')).to contain_parsed_output({
+        tiddler_image: {
+          image_open: '!',
+          tiddler_space_link: {
+            tiddler_link: { link: 'foo' },
+            space_link: { link: 'bar', at: '@' }
+          }
+        }
+      })
+    end
+
+    it 'should support embedding tiddlyimages inside tiddlylinks' do
+      expect(parser.parse('[[![[foo]]|bar]]')).to contain_parsed_output({
+        tiddler_link: {
+          open: '[[',
+          link: 'bar',
+          close: ']]',
+          tiddler_image: {
+            image_open: '!',
+            tiddler_link: { open: '[[', link: 'foo', close: ']]' }
+          }
+        }
+      })
+
+      expect(parser.parse('[[![[foo|bar]]|baz]]')).to contain_parsed_output({
+        tiddler_link: {
+          open: '[[',
+          link: 'baz',
+          close: ']]',
+          tiddler_image: {
+            image_open: '!',
+            tiddler_link: { open: '[[', title: 'foo', link: 'bar', close: ']]' }
+          }
+        }
+      })
+
+      expect(parser.parse('[[!foo@bar|baz]]')).to contain_parsed_output({
+        tiddler_link: {
+          open: '[[',
+          link: 'baz',
+          close: ']]',
+          tiddler_image: {
+            image_open: '!',
+            tiddler_space_link: {
+              tiddler_link: { link: 'foo' },
+              space_link: { link: 'bar', at: '@' }
+            }
+          }
+        }
+      })
+    end
+  end
+
   describe 'transclusions' do
     it 'should handle simple transclusions' do
       expect(parser.parse('{{{tiddler title}}}')).to contain_parsed_output({
@@ -501,6 +567,72 @@ describe FederacyMarkdownParser do
         }
       })
     end
+
+    it 'should handle transclusions using tiddly images' do
+      expect(parser.parse('{{{![[tiddler title]]}}}')).to contain_parsed_output({
+        transclusion: {
+          open: '{{{',
+          tiddler_image: {
+            image_open: '!',
+            tiddler_link: {
+              open: '[[',
+              link: 'tiddler title',
+              close: ']]'
+            }
+          },
+          close: '}}}'
+        }
+      })
+
+      expect(parser.transclusion.parse('{{{!tiddler-title@space}}}')).to contain_parsed_output({
+        transclusion: {
+          open: '{{{',
+          tiddler_image: {
+            image_open: '!',
+            tiddler_space_link: {
+              tiddler_link: { link: 'tiddler-title' },
+              space_link: { at: '@', link: 'space' }
+            }
+          },
+          close: '}}}'
+        }
+      })
+
+      expect(parser.transclusion.parse('{{{!tiddler-title@user:space}}}')).to contain_parsed_output({
+        transclusion: {
+          open: '{{{',
+          tiddler_image: {
+            image_open: '!',
+            tiddler_space_link: {
+              tiddler_link: { link: 'tiddler-title' },
+              space_link: { at: '@', user: 'user', link: 'space' }
+            }
+          },
+          close: '}}}'
+        }
+      })
+
+      expect(parser.parse('{{{![[tiddler title]]@[[user name:space name]]}}}')).to contain_parsed_output({
+        transclusion: {
+          open: '{{{',
+          tiddler_image: {
+            image_open: '!',
+            tiddler_space_link: {
+              tiddler_link: { open: '[[', link: 'tiddler title', close: ']]' },
+              space_link: {
+                open: '[[',
+                at: '@',
+                user: 'user name',
+                link: 'space name',
+                close: ']]'
+              }
+            }
+          },
+          close: '}}}'
+        }
+      })
+    end
   end
+
 
 end

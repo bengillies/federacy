@@ -5,6 +5,7 @@ class FederacyMarkdownParser < Parslet::Parser
   ##
   rule(:sym) do
     inline_code_block |
+    tiddlyimage |
     tiddlylink |
     markdown_link |
     char
@@ -66,8 +67,11 @@ class FederacyMarkdownParser < Parslet::Parser
 
   rule(:link_title) do
     (
-      link_title_separator.absent? >> eol?.absent? >> link_close.absent? >> any
-    ).repeat(1).as(:title) >>
+      tiddlyimage_unbracketed | tiddlyimage |
+      (
+        link_title_separator.absent? >> eol?.absent? >> link_close.absent? >> any
+      ).repeat(1).as(:title)
+    ) >>
     link_title_separator
   end
 
@@ -111,18 +115,20 @@ class FederacyMarkdownParser < Parslet::Parser
     (whitespace.absent? >> any).repeat(1).as(:link)
   end
 
+  rule(:space_link_body_unbracketed) do
+    link_user_word >> link_word |
+    link_word
+  end
   rule(:space_link_body) do
     link_open >> link_title >> link_user_body >> link_body_simple >> link_close |
     link_open >> link_title >> link_body_simple >> link_close |
     link_open >> link_user_body >> link_body_simple >> link_close |
     link_open >> link_body_simple >> link_close |
-    link_user_word >> link_word |
-    link_word
+    space_link_body_unbracketed
   end
   rule(:space_link) do
     (space_symbol >> space_link_body).as(:space_link)
   end
-
 
   rule(:tiddler_link_unbracketed) do
     (
@@ -138,6 +144,58 @@ class FederacyMarkdownParser < Parslet::Parser
     tiddler_space_link |
     tiddler_link |
     space_link
+  end
+
+  ##
+  # Tiddly Images
+  #
+  # Normal tiddlylink to a tiddler, but with an exclamation in front
+  ##
+
+  rule(:tiddlyimage_tiddler_link_unbracketed) do
+    (
+      (
+        space_symbol.absent? >>
+        link_title_separator.absent? >>
+        whitespace.absent? >>
+        any
+      ).repeat(1).as(:link)
+    ).as(:tiddler_link)
+  end
+  rule(:tiddlyimage_link_word) do
+    (whitespace.absent? >> link_title_separator.absent? >> any).repeat(1).as(:link)
+  end
+  rule(:tiddlyimage_link_user_word) do
+    (
+      whitespace.absent? >>
+      link_user_separator.absent? >>
+      link_title_separator.absent? >>
+      any
+    ).repeat(1).as(:user) >>
+    link_user_separator
+  end
+  rule(:tiddlyimage_unbracketed) do
+    # handle tiddlyimages with no brackets embedded as the title inside other tiddlylinks
+    (
+      exclamation_mark.as(:image_open) >>
+      (
+        (tiddler_link | tiddlyimage_tiddler_link_unbracketed) >>
+        (
+          space_symbol >>
+          (
+            tiddlyimage_link_user_word >> tiddlyimage_link_word |
+            tiddlyimage_link_word
+          )
+        ).as(:space_link)
+      ).as(:tiddler_space_link)
+    ).as(:tiddler_image)
+  end
+
+  rule(:tiddlyimage) do
+    (
+      exclamation_mark.as(:image_open) >>
+      (tiddler_space_link | tiddler_link)
+    ).as(:tiddler_image)
   end
 
   ##
@@ -379,6 +437,46 @@ class FederacyMarkdownParser < Parslet::Parser
     space_link_insude_transclusion.as(:space_link)
   end
 
+
+  rule(:tiddlyimage_transclusion_link_word) do
+    (whitespace.absent? >> transclusion_end.absent? >> any).repeat(1).as(:link)
+  end
+  rule(:tiddlyimage_transclusion_link_user_word) do
+    (
+      whitespace.absent? >>
+      link_user_separator.absent? >>
+      transclusion_end.absent? >>
+      any
+    ).repeat(1).as(:user) >>
+    link_user_separator
+  end
+  rule(:tiddlyimage_transclusion_tiddler_link_unbracketed) do
+    (
+      (
+        space_symbol.absent? >>
+        transclusion_end.absent? >>
+        whitespace.absent? >>
+        any
+      ).repeat(1).as(:link)
+    ).as(:tiddler_link)
+  end
+  rule(:tiddlyimage_inside_transclusion) do
+    # handle tiddlyimages where the user/space name isn't enclosed in square brackets
+    (
+      exclamation_mark.as(:image_open) >>
+      (
+        (tiddler_link | tiddlyimage_transclusion_tiddler_link_unbracketed) >>
+        (
+          space_symbol >>
+          (
+            tiddlyimage_transclusion_link_user_word >> tiddlyimage_transclusion_link_word |
+            tiddlyimage_transclusion_link_word
+          )
+        ).as(:space_link)
+      ).as(:tiddler_space_link)
+    ).as(:tiddler_image)
+  end
+
   rule(:transclusion_start) { str('{{{').as(:open) }
   rule(:transclusion_end) { str('}}}').as(:close) }
   rule(:transclusion_tiddler) do
@@ -388,9 +486,20 @@ class FederacyMarkdownParser < Parslet::Parser
   end
   rule(:transclusion) do
     (
-      transclusion_start >>
-      transclusion_tiddler >>
-      transclusion_end >> eol?
+      (
+        transclusion_start >>
+        tiddlyimage_inside_transclusion >>
+        transclusion_end >>
+        eol?
+      ) |
+      (
+        transclusion_start >>
+        (
+          tiddlyimage |
+          transclusion_tiddler
+        ) >>
+        transclusion_end >> eol?
+      )
     ).as(:transclusion)
   end
 
