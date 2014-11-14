@@ -6,6 +6,7 @@ describe FederacyMarkdownLinkExtractor do
   it 'supports all link types' do
     expect(FederacyMarkdownLinkExtractor::LINK_TYPES).to eq(%w(
       transclusion
+      tiddler_image
       tiddler_space_link
       space_link
       tiddler_link
@@ -108,6 +109,142 @@ describe FederacyMarkdownLinkExtractor do
         link_type: :tiddlylink,
         tiddler: nil,
         space: 'baz',
+        user: 'bar',
+        title: 'foo'
+      }])
+  end
+
+  it 'extracts image links' do
+    expect(FederacyMarkdownLinkExtractor.new("!foo@bar ![[foo]] ![[foo|bar]]@baz:qux").extract_links)
+      .to eq([{
+        start: 0,
+        end: 7,
+        link_type: :tiddlyimage,
+        tiddler: 'foo',
+        space: 'bar',
+        user: nil,
+        title: 'foo'
+      },
+      {
+        start: 9,
+        end: 16,
+        link_type: :tiddlyimage,
+        tiddler: 'foo',
+        space: nil,
+        user: nil,
+        title: 'foo'
+      },
+      {
+        start: 18,
+        end: 37,
+        link_type: :tiddlyimage,
+        tiddler: 'bar',
+        space: 'qux',
+        user: 'baz',
+        title: 'foo'
+      }])
+  end
+
+  it 'extracts embedded image links' do
+    expect(FederacyMarkdownLinkExtractor.new("{{{!foo@bar:baz}}}\n{{{![[foo]]}}}\n{{{![[foo bar]]@[[baz biz:qux]]}}}").extract_links)
+      .to eq([{
+        start: 0,
+        end: 17,
+        link_type: :transclusion,
+        tiddler: 'foo',
+        space: 'baz',
+        user: 'bar',
+        title: 'foo'
+      },
+      {
+        start: 19,
+        end: 32,
+        link_type: :transclusion,
+        tiddler: 'foo',
+        space: nil,
+        user: nil,
+        title: 'foo'
+      },
+      {
+        start: 34,
+        end: 67,
+        link_type: :transclusion,
+        tiddler: 'foo bar',
+        space: 'qux',
+        user: 'baz biz',
+        title: 'foo bar'
+      }])
+
+    expect(FederacyMarkdownLinkExtractor.new("[[![[foo]]@bar|baz]] [[!foo@bar|baz]] [[![[foo]]|bar]]@baz:qux @[[![[foo]]@qux|bar:qux]]").extract_links)
+      .to eq([{
+        start: 2,
+        end: 13,
+        link_type: :tiddlyimage,
+        tiddler: 'foo',
+        space: 'bar',
+        user: nil,
+        title: 'foo'
+      },
+      {
+        start: 0,
+        end: 19,
+        link_type: :tiddlylink,
+        tiddler: 'baz',
+        space: nil,
+        user: nil,
+        title: 'foo'
+      },
+      {
+        start: 23,
+        end: 30,
+        link_type: :tiddlyimage,
+        tiddler: 'foo',
+        space: 'bar',
+        user: nil,
+        title: 'foo'
+      },
+      {
+        start: 21,
+        end: 36,
+        link_type: :tiddlylink,
+        tiddler: 'baz',
+        space: nil,
+        user: nil,
+        title: 'foo'
+      },
+      {
+        start: 40,
+        end: 47,
+        link_type: :tiddlyimage,
+        tiddler: 'foo',
+        space: nil,
+        user: nil,
+        title: 'foo'
+      },
+      {
+        start: 38,
+        end: 61,
+        link_type: :tiddlylink,
+        tiddler: 'bar',
+        space: 'qux',
+        user: 'baz',
+        title: 'foo'
+      },
+      {
+        start: 66,
+        end: 77,
+        link_type: :tiddlyimage,
+        tiddler: 'foo',
+        space: 'qux',
+        user: nil,
+        title: 'foo'
+      },
+      {
+        start: 63,
+        end: 87,
+        link_type: :tiddlylink,
+        tiddler: nil,
+        space: 'qux',
         user: 'bar',
         title: 'foo'
       }])

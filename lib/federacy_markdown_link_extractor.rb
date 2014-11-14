@@ -19,6 +19,9 @@ class FederacyMarkdownLinkExtractor
   # tiddler_link: { link, [title] }
   # space_link: { link, [title], [user] }
   # tiddler_space_link: { tiddler_link: { link, [title] }, space_link: { link, [user] } }
+  # tiddler_image: { [tiddler_link], [tiddler_space_link] }
+  # tiddler_link: { link, tiddler_image: { [tiddler_link], [tiddler_space_link] } }
+  # tiddler_space_link: { tiddler_link: { link, tiddler_image: { [tiddler_link], [tiddler_space_link] } }, space_link: { link, [user] } }
   #
   #
   # Footer References:
@@ -35,6 +38,7 @@ class FederacyMarkdownLinkExtractor
 
   LINK_TYPES = %w(
     transclusion
+    tiddler_image
     tiddler_space_link
     space_link
     tiddler_link
@@ -97,7 +101,9 @@ class FederacyMarkdownLinkExtractor
 
   def has_image? link
     return :image_link if link[:image_link]
-    return :footer_image if  link[:footer_image]
+    return :footer_image if link[:footer_image]
+    return :tiddler_image if link[:tiddler_image]
+    return :tiddler_image if link[:tiddler_link] && link[:tiddler_link][:tiddler_image]
   end
 
   def link_pos link
@@ -128,8 +134,15 @@ class FederacyMarkdownLinkExtractor
   end
 
   def format_transclusion link
-    tiddler_space_link = link[:tiddler_space_link] || {}
-    tiddler_link = link[:tiddler_link] || tiddler_space_link[:tiddler_link]
+    tiddler_image = link[:tiddler_image] || {}
+    tiddler_space_link =
+      link[:tiddler_space_link] ||
+      tiddler_image[:tiddler_space_link] ||
+      {}
+    tiddler_link =
+      link[:tiddler_link] ||
+      tiddler_image[:tiddler_link] ||
+      tiddler_space_link[:tiddler_link]
     space_link = (tiddler_space_link && tiddler_space_link[:space_link]) || {}
     startPos, endPos = link_pos link
 
@@ -144,45 +157,85 @@ class FederacyMarkdownLinkExtractor
     }
   end
 
-  def format_tiddler_space_link link
-    startPos, endPos = link_pos(link)
+  def format_tiddler_image link
+    image_link_type = link[:tiddler_link] ? :tiddler_link : :tiddler_space_link
+    image_details = send("format_#{image_link_type}", link[image_link_type]).first
+    startPos, endPos = link_pos link
 
     {
+      start: startPos,
+      end: endPos,
+      link_type: :tiddlyimage,
+      tiddler: image_details[:tiddler],
+      space: image_details[:space],
+      user: image_details[:user],
+      title: image_details[:title]
+    }
+  end
+
+  def format_tiddler_space_link link
+    startPos, endPos = link_pos(link)
+    links = []
+    title = nil
+
+    if img_link = has_image?(link)
+      links << img_link = send(
+        "format_#{img_link}",
+        link[img_link] || link[:tiddler_link][img_link]
+      )
+      title = img_link[:title]
+    end
+
+    links << {
       start: startPos,
       end: endPos,
       link_type: :tiddlylink,
       tiddler: link[:tiddler_link][:link],
       space: link[:space_link][:link],
       user: link[:space_link][:user],
-      title: link[:tiddler_link][:title] || link[:tiddler_link][:link]
+      title: title || link[:tiddler_link][:title] || link[:tiddler_link][:link]
     }
   end
 
   def format_space_link link
     startPos, endPos = link_pos(link)
+    links = []
+    title = nil
 
-    {
+    if img_link = has_image?(link)
+      links << img_link = send("format_#{img_link}", link[img_link])
+      title = img_link[:title]
+    end
+
+    links << {
       start: startPos,
       end: endPos,
       link_type: :tiddlylink,
       tiddler: nil,
       space: link[:link],
       user: link[:user],
-      title: link[:title] || link[:link]
+      title: title || link[:title] || link[:link]
     }
   end
 
   def format_tiddler_link link
     startPos, endPos = link_pos(link)
+    links = []
+    title = nil
 
-    {
+    if img_link = has_image?(link)
+      links << img_link = send("format_#{img_link}", link[img_link])
+      title = img_link[:title]
+    end
+
+    links << {
       start: startPos,
       end: endPos,
       link_type: :tiddlylink,
       tiddler: link[:link],
       space: nil,
       user: nil,
-      title: link[:title] || link[:link]
+      title: title || link[:title] || link[:link]
     }
   end
 
