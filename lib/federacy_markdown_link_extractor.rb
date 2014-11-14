@@ -96,6 +96,33 @@ class FederacyMarkdownLinkExtractor
     return :footer_image if  link[:footer_image]
   end
 
+  def link_pos link
+    startPos = link[:at] || link[:image_open] || link[:open]
+    startPos &&= startPos.offset
+    endPos = link[:close] && link[:close].offset + link[:close].size - 1
+
+    # handle links without special start and end characters, e.g. foo@bar
+    unless startPos && endPos
+      strPos = link.values.reduce(start: Float::INFINITY, end: 0) do |res, val|
+        if val.respond_to?(:offset)
+          valStart = val.offset
+          valEnd = val.offset + val.size - 1
+        else
+          valStart, valEnd = link_pos(val)
+        end
+        {
+          start: res[:start] < valStart ? res[:start] : valStart,
+          end: res[:end] > valEnd ? res[:end] : valEnd
+        }
+      end
+    end
+
+    [
+      startPos || strPos[:start],
+      endPos || strPos[:end]
+    ]
+  end
+
   def transform
     flatten.map do |link|
       transformer = "format_#{link[:type].to_s}"
@@ -107,8 +134,11 @@ class FederacyMarkdownLinkExtractor
     tiddler_space_link = link[:tiddler_space_link] || {}
     tiddler_link = link[:tiddler_link] || tiddler_space_link[:tiddler_link]
     space_link = (tiddler_space_link && tiddler_space_link[:space_link]) || {}
+    startPos, endPos = link_pos link
 
     {
+      start: startPos,
+      end: endPos,
       link_type: :transclusion,
       tiddler: link[:link] || tiddler_link[:link],
       space: space_link[:link],
@@ -118,7 +148,11 @@ class FederacyMarkdownLinkExtractor
   end
 
   def format_tiddler_space_link link
+    startPos, endPos = link_pos(link)
+
     {
+      start: startPos,
+      end: endPos,
       link_type: :tiddlylink,
       tiddler: link[:tiddler_link][:link],
       space: link[:space_link][:link],
@@ -128,7 +162,11 @@ class FederacyMarkdownLinkExtractor
   end
 
   def format_space_link link
+    startPos, endPos = link_pos(link)
+
     {
+      start: startPos,
+      end: endPos,
       link_type: :tiddlylink,
       tiddler: nil,
       space: link[:link],
@@ -138,7 +176,11 @@ class FederacyMarkdownLinkExtractor
   end
 
   def format_tiddler_link link
+    startPos, endPos = link_pos(link)
+
     {
+      start: startPos,
+      end: endPos,
       link_type: :tiddlylink,
       tiddler: link[:link],
       space: nil,
@@ -154,7 +196,11 @@ class FederacyMarkdownLinkExtractor
     links << image = send("format_#{has_image? link}", link) if has_image? link
 
     if link_target
+      startPos, endPos = link_pos(link)
+
       links << {
+        start: startPos,
+        end: endPos,
         link_type: :markdown_link,
         link: link_target,
         title: link[:title] || (image && image[:title]) || link[:title_and_reference]
@@ -163,11 +209,14 @@ class FederacyMarkdownLinkExtractor
   end
 
   def format_standard_link link
+    startPos, endPos = link_pos(link)
     links = []
 
     links << image = send("format_#{has_image? link}", link) if has_image? link
 
     links << {
+      start: startPos,
+      end: endPos,
       link_type: :markdown_link,
       link: link[:link],
       title: link[:title] || (image && image[:title])
@@ -175,7 +224,11 @@ class FederacyMarkdownLinkExtractor
   end
 
   def format_image_link link
+    startPos, endPos = link_pos(link)
+
     {
+      start: startPos,
+      end: endPos,
       link_type: :markdown_image,
       link: link[:link],
       title: link[:title]
@@ -185,7 +238,11 @@ class FederacyMarkdownLinkExtractor
   def format_footer_image link
     link_target = reference_link(link[:reference] || link[:title_and_reference])
     if link_target
+      startPos, endPos = link_pos(link)
+
       {
+        start: startPos,
+        end: endPos,
         link_type: :markdown_image,
         link: link_target,
         title: link[:title] || link[:title_and_reference]
