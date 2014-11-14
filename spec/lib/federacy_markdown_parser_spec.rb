@@ -294,6 +294,15 @@ describe FederacyMarkdownParser do
       })
     end
 
+    it 'should support multiple links' do
+      expect(parser.parse('[[the]] [[title|foo link]]')).to contain_parsed_output({
+        tiddler_link: [
+          { open: '[[', link: 'the', close: ']]' },
+          { open: '[[', link: 'foo link', title: 'title', close: ']]' }
+        ]
+      })
+    end
+
     it 'should support basic space links' do
       expect(parser.parse('@space-name')).to contain_parsed_output({
         space_link: { at: '@', link: 'space-name' }
@@ -303,6 +312,20 @@ describe FederacyMarkdownParser do
     it 'should support complex space links' do
       expect(parser.parse('@[[space name]]')).to contain_parsed_output({
         space_link: { at: '@', open: '[[',  link: 'space name', close: ']]' }
+      })
+
+      expect(parser.parse('@[[title|space name]]')).to contain_parsed_output({
+        space_link: { open: '[[', at: '@',  title: 'title', link: 'space name', close: ']]' }
+      })
+    end
+
+    it 'should support multiple complex space links' do
+      expect(parser.parse('@[[foo|bar]] @user:space  @[[title|user:name]]')).to contain_parsed_output({
+        space_link: [
+         { at: '@', open: '[[', close: ']]', title: 'foo', link: 'bar' },
+         { at: '@', user: 'user', link: 'space' },
+         { at: '@', open: '[[', user: 'user', title: 'title', link: 'name', close: ']]' }
+        ]
       })
 
       expect(parser.parse('@[[title|space name]]')).to contain_parsed_output({

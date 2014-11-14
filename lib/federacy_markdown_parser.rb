@@ -66,7 +66,7 @@ class FederacyMarkdownParser < Parslet::Parser
 
   rule(:link_title) do
     (
-      link_title_separator.absent? >> eol?.absent? >> any
+      link_title_separator.absent? >> eol?.absent? >> link_close.absent? >> any
     ).repeat(1).as(:title) >>
     link_title_separator
   end
@@ -98,7 +98,12 @@ class FederacyMarkdownParser < Parslet::Parser
     link_user_separator
   end
   rule(:link_user_body) do
-    (link_user_separator.absent? >> eol?.absent? >> any).repeat(1).as(:user) >>
+    (
+      link_user_separator.absent? >>
+      eol?.absent? >>
+      link_close.absent? >>
+      any
+    ).repeat(1).as(:user) >>
     link_user_separator
   end
 
