@@ -1,9 +1,9 @@
 require 'spec_helper'
-require 'federacy_markdown_parser'
+require 'markdown/parser'
 
-describe FederacyMarkdownParser do
+describe Markdown::Parser do
 
-  let(:parser) { FederacyMarkdownParser.new }
+  let(:parser) { Markdown::Parser.new }
 
   describe 'standard markdown links' do
     it 'should parse standard markdown links' do
@@ -633,6 +633,5 @@ describe FederacyMarkdownParser do
       })
     end
   end
-
 
 end

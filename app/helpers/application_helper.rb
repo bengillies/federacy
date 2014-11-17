@@ -1,10 +1,10 @@
-require 'federacy_markdown'
+require 'markdown/renderer'
 
 module ApplicationHelper
 
   def markdown_renderer space
     Redcarpet::Markdown.new(
-      FederacyMarkdown.new(space: space),
+      Markdown::Renderer.new(space: space),
       :no_intra_emphasis => true,
       :tables => true,
       :fenced_code_blocks => true,

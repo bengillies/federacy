@@ -1,10 +1,10 @@
 require 'spec_helper'
-require 'federacy_markdown_link_extractor'
+require 'markdown/link_extractor'
 
-describe FederacyMarkdownLinkExtractor do
+describe Markdown::LinkExtractor do
 
   it 'supports all link types' do
-    expect(FederacyMarkdownLinkExtractor::LINK_TYPES).to eq(%w(
+    expect(Markdown::LinkExtractor::LINK_TYPES).to eq(%w(
       transclusion
       tiddler_image
       tiddler_space_link
@@ -19,7 +19,7 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'extracts transclusions' do
-    expect(FederacyMarkdownLinkExtractor.new("{{{foo@bar:baz}}}").extract_links).to eq([{
+    expect(Markdown::LinkExtractor.new("{{{foo@bar:baz}}}").extract_links).to eq([{
       start: 0,
       end: 16,
       link_type: :transclusion,
@@ -31,7 +31,7 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'extracts tiddler space links' do
-    expect(FederacyMarkdownLinkExtractor.new("foo@bar:baz [[foo|bar]]@baz:qux").extract_links)
+    expect(Markdown::LinkExtractor.new("foo@bar:baz [[foo|bar]]@baz:qux").extract_links)
       .to eq([{
         start: 0,
         end: 10,
@@ -53,7 +53,7 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'extracts tiddler links' do
-    expect(FederacyMarkdownLinkExtractor.new("[[foo]] [[foo|bar]]").extract_links)
+    expect(Markdown::LinkExtractor.new("[[foo]] [[foo|bar]]").extract_links)
       .to eq([{
         start: 0,
         end: 6,
@@ -75,7 +75,7 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'extracts space links' do
-    expect(FederacyMarkdownLinkExtractor.new("@foo @[[foo|bar]] @foo:bar @[[foo|bar:baz]]").extract_links)
+    expect(Markdown::LinkExtractor.new("@foo @[[foo|bar]] @foo:bar @[[foo|bar:baz]]").extract_links)
       .to eq([{
         start: 0,
         end: 3,
@@ -115,7 +115,7 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'extracts image links' do
-    expect(FederacyMarkdownLinkExtractor.new("!foo@bar ![[foo]] ![[foo|bar]]@baz:qux").extract_links)
+    expect(Markdown::LinkExtractor.new("!foo@bar ![[foo]] ![[foo|bar]]@baz:qux").extract_links)
       .to eq([{
         start: 0,
         end: 7,
@@ -146,7 +146,7 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'extracts embedded image links' do
-    expect(FederacyMarkdownLinkExtractor.new("{{{!foo@bar:baz}}}\n{{{![[foo]]}}}\n{{{![[foo bar]]@[[baz biz:qux]]}}}").extract_links)
+    expect(Markdown::LinkExtractor.new("{{{!foo@bar:baz}}}\n{{{![[foo]]}}}\n{{{![[foo bar]]@[[baz biz:qux]]}}}").extract_links)
       .to eq([{
         start: 0,
         end: 17,
@@ -175,7 +175,7 @@ describe FederacyMarkdownLinkExtractor do
         title: 'foo bar'
       }])
 
-    expect(FederacyMarkdownLinkExtractor.new("[[![[foo]]@bar|baz]] [[!foo@bar|baz]] [[![[foo]]|bar]]@baz:qux @[[![[foo]]@qux|bar:qux]]").extract_links)
+    expect(Markdown::LinkExtractor.new("[[![[foo]]@bar|baz]] [[!foo@bar|baz]] [[![[foo]]|bar]]@baz:qux @[[![[foo]]@qux|bar:qux]]").extract_links)
       .to eq([{
         start: 2,
         end: 13,
@@ -251,7 +251,7 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'extracts markdown links' do
-    expect(FederacyMarkdownLinkExtractor.new("[foo](bar) [foo](bar \"baz\")").extract_links)
+    expect(Markdown::LinkExtractor.new("[foo](bar) [foo](bar \"baz\")").extract_links)
       .to eq([{
         start: 0,
         end: 9,
@@ -269,7 +269,7 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'extracts markdown footer links' do
-    expect(FederacyMarkdownLinkExtractor.new("[foo][] [foo][bar]\n[foo]: bar\n[bar]: baz").extract_links)
+    expect(Markdown::LinkExtractor.new("[foo][] [foo][bar]\n[foo]: bar\n[bar]: baz").extract_links)
       .to eq([{
         start: 0,
         end: 6,
@@ -287,11 +287,11 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'doesn\'t extract anything if the footer reference doesn\'t exist' do
-    expect(FederacyMarkdownLinkExtractor.new("[foo][bar]").extract_links).to eq([])
+    expect(Markdown::LinkExtractor.new("[foo][bar]").extract_links).to eq([])
   end
 
   it 'extracts markdown images' do
-    expect(FederacyMarkdownLinkExtractor.new("![foo](bar) [![baz](qux)](quux)").extract_links)
+    expect(Markdown::LinkExtractor.new("![foo](bar) [![baz](qux)](quux)").extract_links)
       .to eq([{
         start: 0,
         end: 10,
@@ -316,7 +316,7 @@ describe FederacyMarkdownLinkExtractor do
   end
 
   it 'doesn\'t extract links from code blocks' do
-    expect(FederacyMarkdownLinkExtractor.new('`[foo](bar) final-frontier@space`').extract_links)
+    expect(Markdown::LinkExtractor.new('`[foo](bar) final-frontier@space`').extract_links)
       .to eq([])
   end
 
