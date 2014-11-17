@@ -1,40 +1,52 @@
+require 'links/resolver'
+
 class ShortLinksController < ApplicationController
   respond_to :html, :json
 
   def show_space
-    @space = Space.visible_to_user(current_user).find_by_name params[:space_name]
-    return not_found(:space) if @space.nil?
-    redirect_to @space
+    begin
+      redirect_to Links::Resolver.new(current_user).resolve(params)
+    rescue Links::SpaceNotFound
+      not_found(:space)
+    end
   end
 
   def show_tiddler
-    @space = Space.visible_to_user(current_user).find(params[:space_id])
-    return not_found(:space) if @space.nil?
-    @tiddler = @space.tiddlers.by_title(params[:tiddler_title]).first
-    return not_found(:tiddler) if @tiddler.nil?
-    redirect_to [@space, @tiddler]
+    begin
+      redirect_to Links::Resolver.new(current_user).resolve(params)
+    rescue Links::SpaceNotFound
+      not_found(:space)
+    rescue Links::TiddlerNotFound
+      not_found(:tiddler)
+    end
   end
 
   def show_space_tiddler
-    @space = Space.visible_to_user(current_user).find_by_name params[:space_name]
-    return not_found(:space) if @space.nil?
-    @tiddler = @space.tiddlers.by_title(params[:tiddler_title]).first
-    return not_found(:tiddler) if @tiddler.nil?
-    redirect_to [@space, @tiddler]
+    begin
+      redirect_to Links::Resolver.new(current_user).resolve(params)
+    rescue Links::SpaceNotFound
+      not_found(:space)
+    rescue Links::TiddlerNotFound
+      not_found(:tiddler)
+    end
   end
 
   def show_user_space
-    @space = User.find_by_name(params[:username]).spaces.visible_to_user(current_user).find_by_name params[:space_name]
-    return not_found(:space) if @space.nil?
-    redirect_to @space
+    begin
+      redirect_to Links::Resolver.new(current_user).resolve(params)
+    rescue Links::SpaceNotFound
+      not_found(:space)
+    end
   end
 
   def show_user_space_tiddler
-    @space = User.find_by_name(params[:username]).spaces.visible_to_user(current_user).find_by_name params[:space_name]
-    return not_found(:space) if @space.nil?
-    @tiddler = @space.tiddlers.by_title(params[:tiddler_title]).first
-    return not_found(:tiddler) if @tiddler.nil?
-    redirect_to [@space, @tiddler]
+    begin
+      redirect_to Links::Resolver.new(current_user).resolve(params)
+    rescue Links::SpaceNotFound
+      not_found(:space)
+    rescue Links::TiddlerNotFound
+      not_found(:tiddler)
+    end
   end
 
 end

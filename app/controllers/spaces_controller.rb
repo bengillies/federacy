@@ -59,7 +59,7 @@ class SpacesController < ApplicationController
   end
 
   def create
-    @space = Space.new_with_user space_params
+    @space = Space.new_with_user current_user, space_params
 
     respond_with do |format|
       if @space.save
