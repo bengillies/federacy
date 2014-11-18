@@ -2,6 +2,8 @@ class Tiddler < ActiveRecord::Base
   has_many :revisions, ->{ includes(:textable).order("created_at DESC") }, inverse_of: :tiddler, dependent: :destroy
   has_many :revision_tags, through: :latest_revision
   has_many :revision_fields, through: :latest_revision
+  has_many :revision_links, through: :latest_revision
+  has_many :back_links, class_name: "RevisionLink"
   has_one :latest_revision, -> {
     where(%q(revisions.id in (
       with latest_revisions as
@@ -17,7 +19,7 @@ class Tiddler < ActiveRecord::Base
 
   validates_presence_of :space
 
-  delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, :modifier, to: :current_revision
+  delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, :modifier, :links, :back_links, to: :current_revision
 
   scope :by_tag, ->(tag) {
     joins("inner join revision_tags on revisions.id = revision_tags.revision_id")

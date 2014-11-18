@@ -1,6 +1,8 @@
 class Revision < ActiveRecord::Base
   has_many :revision_fields, inverse_of: :revision, dependent: :delete_all
   has_many :revision_tags, inverse_of: :revision, dependent: :delete_all
+  has_many :revision_links, inverse_of: :revision, dependent: :delete_all
+  has_many :back_links, class_name: 'RevisionLink', inverse_of: :tiddler, foreign_key: :tiddler_id
   belongs_to :tiddler, inverse_of: :revisions
   belongs_to :textable, polymorphic: true
   belongs_to :user
@@ -49,7 +51,7 @@ class Revision < ActiveRecord::Base
   end
 
   def body
-      if textable.respond_to? :body then textable.body else nil end
+    if textable.respond_to? :body then textable.body else nil end
   end
 
   def text
@@ -81,6 +83,10 @@ class Revision < ActiveRecord::Base
   def add_fields new_fields
     new_fields.each {|k, v| revision_fields.build key: k, value: v }
     new_fields
+  end
+
+  def links
+    revision_links
   end
 
   def binary?
