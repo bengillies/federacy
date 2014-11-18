@@ -2,21 +2,30 @@ require 'links/transcluder'
 require 'markdown/renderer'
 
 class Renderer
+  attr_reader :space
 
-  def initialize view, user, space, transcluder=nil
+  def initialize view, user, space, transcluder=nil, tokens=nil
     @current_user = user
     @space = space
     @view = view
-    @transcluder = transcluder || Links::Transcluder.new(self, user, space)
+    @tokens = tokens || {
+      start: SecureRandom.uuid + '_START',
+      end: SecureRandom.uuid + '_END'
+    }
+    @transcluder = transcluder || Links::Transcluder.new(self, user)
   end
 
   def clone space=nil, transcluder=nil
     @transcluder.space = space if space
-    Renderer.new(@view, @current_user, space || @space, transcluder)
+    Renderer.new(@view, @current_user, space || @space, transcluder, @tokens)
   end
 
   def markdown_html
-    @markdown_html ||= Markdown::Renderer.new(space: @space, with_toc_data: true)
+    @markdown_html ||= Markdown::Renderer.new(
+      space: @space,
+      tokens: @tokens,
+      with_toc_data: true
+    )
   end
 
   def markdown_renderer space
@@ -35,7 +44,7 @@ class Renderer
 
   def markdown text
     text = markdown_renderer(@space).render(text)
-    @transcluder.transclude(text, @markdown_html.transclusion).html_safe
+    @transcluder.transclude(text, @markdown_html.transclusions, @tokens).html_safe
   end
 
   def render_tiddler tiddler, options

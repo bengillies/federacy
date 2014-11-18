@@ -41,7 +41,7 @@ module Links
     end
 
     def resolve_space_by_name space_name
-      Space.find_by_name(space_name)
+      Space.find_by_name(space_name.to_s)
     end
 
     def resolve_space_by_id space_id

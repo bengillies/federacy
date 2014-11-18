@@ -1,28 +1,26 @@
 require 'markdown/link_extractor'
 
-# TODO: handle external tiddlylinks
-
 module Markdown
 
   class Renderer < Redcarpet::Render::HTML
-    attr_reader :transclusion
+    attr_reader :transclusions
 
     LINK_MAPPINGS = {
       tiddlylink:   '[%{title}](%{link})',
       tiddlyimage:  '![%{title}](%{link})',
-      transclusion: "\n%{rnd}_START\n\n[%{title}](%{link})\n\n%{rnd}_END\n",
+      transclusion: "\n%{start}\n\n[%{title}](%{link})\n\n%{end}\n",
     }
 
     def initialize render_opts
       @current_space = render_opts[:space]
-      @rnd = SecureRandom.uuid
-      @transclusion = { start: "#{@rnd}_START", end: "#{@rnd}_END" }
+      @tokens = render_opts[:tokens]
       super
     end
 
     def preprocess text
+      text = text.clone
       links = Markdown::LinkExtractor.new(text).extract_links
-      @transclusion[:links] = links.select {|link| link[:link_type] == :transclusion }
+      @transclusions = links.select {|link| link[:link_type] == :transclusion }
       replace_links(text, links.select do |link|
         [:tiddlylink, :tiddlyimage, :transclusion].include? link[:link_type]
       end)
@@ -71,7 +69,8 @@ module Markdown
       # escape brackets so they don't clash with any markdown
       link[:link] = resolve_link(link).gsub(/(\(|\))/, "\\\\\\1")
       link[:title] = link[:title].to_s.gsub(/(\[|\])/, "\\\\\\1")
-      link[:rnd] = @rnd
+      link[:start] = @tokens[:start]
+      link[:end] = @tokens[:end]
 
       LINK_MAPPINGS[link[:link_type]] % link
     end
