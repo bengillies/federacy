@@ -61,6 +61,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'foo',
         space: nil,
         user: nil,
+        link: nil,
         title: 'foo'
       },
       {
@@ -70,6 +71,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'bar',
         space: nil,
         user: nil,
+        link: nil,
         title: 'foo'
       }])
   end
@@ -123,6 +125,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'foo',
         space: 'bar',
         user: nil,
+        link: nil,
         title: 'foo'
       },
       {
@@ -132,6 +135,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'foo',
         space: nil,
         user: nil,
+        link: nil,
         title: 'foo'
       },
       {
@@ -141,6 +145,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'bar',
         space: 'qux',
         user: 'baz',
+        link: nil,
         title: 'foo'
       }])
   end
@@ -183,6 +188,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'foo',
         space: 'bar',
         user: nil,
+        link: nil,
         title: 'foo'
       },
       {
@@ -192,6 +198,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'baz',
         space: nil,
         user: nil,
+        link: nil,
         title: 'foo'
       },
       {
@@ -201,6 +208,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'foo',
         space: 'bar',
         user: nil,
+        link: nil,
         title: 'foo'
       },
       {
@@ -210,6 +218,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'baz',
         space: nil,
         user: nil,
+        link: nil,
         title: 'foo'
       },
       {
@@ -219,6 +228,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'foo',
         space: nil,
         user: nil,
+        link: nil,
         title: 'foo'
       },
       {
@@ -237,6 +247,7 @@ describe Markdown::LinkExtractor do
         tiddler: 'foo',
         space: 'qux',
         user: nil,
+        link: nil,
         title: 'foo'
       },
       {
@@ -246,6 +257,34 @@ describe Markdown::LinkExtractor do
         tiddler: nil,
         space: 'qux',
         user: 'bar',
+        title: 'foo'
+      }])
+  end
+
+  it 'handles tiddlylinks to urls instead of tiddlers' do
+    expect(Markdown::LinkExtractor.new("[[foo|http://example.com]]").extract_links)
+      .to eq([{
+        start: 0,
+        end: 25,
+        link_type: :tiddlylink,
+        tiddler: nil,
+        space: nil,
+        user: nil,
+        link: 'http://example.com',
+        title: 'foo'
+      }])
+  end
+
+  it 'handles tiddlyimages to urls instead of tiddlers' do
+    expect(Markdown::LinkExtractor.new("![[foo|http://example.com/image.png]]").extract_links)
+      .to eq([{
+        start: 0,
+        end: 36,
+        link_type: :tiddlyimage,
+        tiddler: nil,
+        space: nil,
+        user: nil,
+        link: 'http://example.com/image.png',
         title: 'foo'
       }])
   end

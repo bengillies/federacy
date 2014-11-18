@@ -37,6 +37,7 @@ module Markdown
         else
           if embedded
             link[:title] = embedded
+            link[:embedded] = true
             embedded = nil
           end
           replace_link text, link
@@ -67,8 +68,8 @@ module Markdown
 
     def render_link link
       # escape brackets so they don't clash with any markdown
-      link[:link] = resolve_link(link).gsub(/(\(|\))/, "\\\\\\1")
-      link[:title] = link[:title].to_s.gsub(/(\[|\])/, "\\\\\\1")
+      link[:link] = (link[:link].to_s || resolve_link(link)).gsub(/(\(|\))/, "\\\\\\1")
+      link[:title] = link[:title].to_s.gsub(/(\[|\])/, "\\\\\\1") unless link[:embedded]
       link[:start] = @tokens[:start]
       link[:end] = @tokens[:end]
 

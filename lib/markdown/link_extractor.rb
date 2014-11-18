@@ -1,4 +1,5 @@
 require 'markdown/parser'
+require 'links/resolver'
 
 module Markdown
 
@@ -54,6 +55,7 @@ module Markdown
     def initialize markdown
       @parser = Markdown::Parser.new
       @raw_output = @parser.parse markdown
+      @resolver = Links::Resolver
     end
 
     def extract_links
@@ -62,7 +64,6 @@ module Markdown
         send transformer, link[:value] if respond_to? transformer
       end.flatten.compact
     end
-
 
     ##
     # Turn a nested list of elements, only some of which we care about, into a
@@ -171,6 +172,7 @@ module Markdown
         tiddler: image_details[:tiddler],
         space: image_details[:space],
         user: image_details[:user],
+        link: image_details[:link],
         title: image_details[:title]
       }
     end
@@ -224,6 +226,7 @@ module Markdown
       startPos, endPos = link_pos(link)
       links = []
       title = nil
+      tiddler = @resolver.tiddler_name?(link[:link]) ? link[:link] : nil
 
       if img_link = has_image?(link)
         links << img_link = send("format_#{img_link}", link[img_link])
@@ -234,9 +237,10 @@ module Markdown
         start: startPos,
         end: endPos,
         link_type: :tiddlylink,
-        tiddler: link[:link],
+        tiddler: tiddler,
         space: nil,
         user: nil,
+        link: tiddler ? nil : link[:link],
         title: title || link[:title] || link[:link]
       }
     end

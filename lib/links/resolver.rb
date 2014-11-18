@@ -11,6 +11,11 @@ module Links
       @space = space
     end
 
+    # is the given string a tiddler, or a link
+    def self.tiddler_name? link
+      not (link.to_s.start_with?('/') || /([A-Za-z]{3,9}:(?:\/\/)?)/.match(link))
+    end
+
     def resolve link
 
       if link[:space_name] || link[:space]
