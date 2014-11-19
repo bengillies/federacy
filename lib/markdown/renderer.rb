@@ -14,6 +14,7 @@ module Markdown
     def initialize render_opts
       @current_space = render_opts[:space]
       @tokens = render_opts[:tokens]
+      @tiddler = render_opts[:tiddler]
       @links = render_opts[:tiddler] && render_opts[:tiddler].links
       super
     end
@@ -71,9 +72,13 @@ module Markdown
       new_link = "/spaces/#{link[:space_id]}"
       if link[:tiddler_id]
         new_link += "/tiddlers/#{link[:tiddler_id]}"
+        if @tiddler && @tiddler.class == Revision
+          new_link += "/revisions/#{link[:target_id]}"
+        end
       else
         new_link += "/t/#{link[:tiddler_title]}"
       end
+
       new_link
     end
 
