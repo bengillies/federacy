@@ -29,6 +29,18 @@
           <li class="tag"><%= tag %></li>
         <% end %>
       </ul>
+      <% if @revision.back_links(current_user).length %>
+        <section class="backlinks">
+          <h2>See Also</h2>
+          <ul>
+            <% @revision.back_links(current_user).each do |back_link| %>
+              <li>
+              <%= link_to back_link.from.title, space_tiddler_path(back_link.from.space, back_link.from), { class: "backlink" } %>
+              </li>
+            <% end %>
+          </ul>
+        </section>
+      <% end %>
     </footer>
   </article>
 </main>

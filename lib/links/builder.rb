@@ -1,7 +1,3 @@
-# TODO:
-#  - add in backlinks to tiddler/revision view
-#  - make shortlinks open up /new page if 404
-
 require_dependency 'links/resolver'
 
 module Links

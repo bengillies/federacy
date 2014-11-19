@@ -19,12 +19,24 @@
     </section>
 
     <footer>
-    <p>Created on <%= link_to space_tiddler_revisions_path tiddler_id: @tiddler do %><%= @tiddler.created.strftime '%d %B %Y at %H:%M' %><% end %>, Last updated <%= time_ago_in_words @tiddler.modified %> ago.</p>
+      <p>Created on <%= link_to space_tiddler_revisions_path tiddler_id: @tiddler do %><%= @tiddler.created.strftime '%d %B %Y at %H:%M' %><% end %>, Last updated <%= time_ago_in_words @tiddler.modified %> ago.</p>
       <ul class="tags">
         <% @tiddler.tags.each do |tag| %>
           <li class="tag"><%= tag %></li>
         <% end %>
       </ul>
+      <% if @tiddler.back_links(current_user).length %>
+        <section class="backlinks">
+          <h2>See Also</h2>
+          <ul>
+            <% @tiddler.back_links(current_user).each do |back_link| %>
+              <li>
+              <%= link_to back_link.from.title, space_tiddler_path(back_link.from.space, back_link.from), { class: "backlink" } %>
+              </li>
+            <% end %>
+          </ul>
+        </section>
+      <% end %>
     </footer>
   </article>
 </main>

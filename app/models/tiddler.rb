@@ -15,13 +15,14 @@ class Tiddler < ActiveRecord::Base
       ) select latest_revisions.id from latest_revisions where created_order = 1
     ))) }, class_name: "Revision"
   belongs_to :space, inverse_of: :tiddlers
+  has_many :space_users, through: :space
   belongs_to :user
   has_many :file_revisions, inverse_of: :tiddler, dependent: :destroy
   has_many :text_revisions, inverse_of: :tiddler, dependent: :destroy
 
   validates_presence_of :space
 
-  delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, :modifier, :links, :back_links, :linkable?, to: :current_revision
+  delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, :modifier, :links, :linkable?, to: :current_revision
 
   scope :by_tag, ->(tag) {
     joins("inner join revision_tags on revisions.id = revision_tags.revision_id")
@@ -64,6 +65,10 @@ class Tiddler < ActiveRecord::Base
     scope
   }
 
+  scope :visible_to_user, ->(user) {
+    scope = joins(:space_users).where(space_users: { user: user })
+  }
+
   def creator
     user
   end
@@ -78,6 +83,16 @@ class Tiddler < ActiveRecord::Base
 
   def modified
     current_revision.created_at
+  end
+
+  def back_links user
+    visible_links = Tiddler
+      .visible_to_user(user)
+      .includes(:revision_links)
+      .map(&:revision_links)
+      .flatten
+      .map(&:id)
+    RevisionLink.where(tiddler: id, id: visible_links)
   end
 
   def new_revision current_space, attrs
