@@ -1,9 +1,10 @@
+require 'links/builder'
+
 class Tiddler < ActiveRecord::Base
   has_many :revisions, ->{ includes(:textable).order("created_at DESC") }, inverse_of: :tiddler, dependent: :destroy
   has_many :revision_tags, through: :latest_revision
   has_many :revision_fields, through: :latest_revision
   has_many :revision_links, through: :latest_revision
-  has_many :back_links, class_name: "RevisionLink"
   has_one :latest_revision, -> {
     where(%q(revisions.id in (
       with latest_revisions as
@@ -19,7 +20,7 @@ class Tiddler < ActiveRecord::Base
 
   validates_presence_of :space
 
-  delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, :modifier, :links, :back_links, to: :current_revision
+  delegate :title, :text, :body, :content_type, :tags, :fields, :binary?, :modifier, :links, :back_links, :linkable?, to: :current_revision
 
   scope :by_tag, ->(tag) {
     joins("inner join revision_tags on revisions.id = revision_tags.revision_id")
@@ -79,12 +80,14 @@ class Tiddler < ActiveRecord::Base
   end
 
   def new_revision attrs
+    old_revision = current_revision
     revision_body = revision_type(attrs).build
     revision_body.set_body! attrs
 
     revision = revision_body.revisions.build title: attrs["title"], user_id: attrs["current_user"].id
     revision.add_tags attrs["tags"] unless attrs.fetch("tags", nil).nil?
     revision.add_fields attrs["fields"] unless attrs.fetch("fields", nil).nil?
+    create_links old_revision, revision, revision_body
 
     revision
   end
@@ -112,5 +115,10 @@ class Tiddler < ActiveRecord::Base
 
   def revision_type attrs
     if attrs.has_key?("file") then file_revisions else text_revisions end
+  end
+
+  def create_links old_revision, new_revision, body
+    link_builder = Links::Builder.new(old_revision, new_revision)
+    link_builder.create_links(body)
   end
 end

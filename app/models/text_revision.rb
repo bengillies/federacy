@@ -15,6 +15,10 @@ class TextRevision < ActiveRecord::Base
     self.content_type = attrs.fetch('content_type', nil)
   end
 
+  def linkable?
+    content_type == 'text/x-markdown' || content_type == nil
+  end
+
   protected
 
   def set_defaults

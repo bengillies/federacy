@@ -26,6 +26,10 @@ class FileRevision < ActiveRecord::Base
     self.content_type = attrs["content_type"]
   end
 
+  def linkable?
+    false
+  end
+
   protected
 
   class DataURIIO < StringIO

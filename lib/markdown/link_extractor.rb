@@ -62,7 +62,13 @@ module Markdown
       flatten.map do |link|
         transformer = "format_#{link[:type].to_s}"
         send transformer, link[:value] if respond_to? transformer
-      end.flatten.compact
+      end.flatten.compact.map do |link|
+        # convert parser output into actual strings
+        link.reduce({}) do |l, obj|
+          l[obj[0]] = obj[1] && obj[1].class == Parslet::Slice ? obj[1].to_s : obj[1]
+          l
+        end
+      end
     end
 
     ##
@@ -226,7 +232,7 @@ module Markdown
       startPos, endPos = link_pos(link)
       links = []
       title = nil
-      tiddler = @resolver.tiddler_name?(link[:link]) ? link[:link] : nil
+      tiddler = @resolver.tiddler_name?(link[:link].to_s) ? link[:link] : nil
 
       if img_link = has_image?(link)
         links << img_link = send("format_#{img_link}", link[img_link])
