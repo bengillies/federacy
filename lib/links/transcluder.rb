@@ -1,4 +1,4 @@
-require 'links/resolver'
+require_dependency 'links/resolver'
 
 module Links
 

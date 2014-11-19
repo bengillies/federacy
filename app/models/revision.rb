@@ -2,7 +2,7 @@ class Revision < ActiveRecord::Base
   has_many :revision_fields, inverse_of: :revision, dependent: :delete_all
   has_many :revision_tags, inverse_of: :revision, dependent: :delete_all
   has_many :revision_links, inverse_of: :revision, dependent: :delete_all
-  has_many :back_links, class_name: 'RevisionLink', inverse_of: :tiddler, foreign_key: :tiddler_id, dependent: :nullify
+  has_many :back_links, class_name: 'RevisionLink', inverse_of: :tiddler, foreign_key: :target_id, dependent: :nullify
   belongs_to :tiddler, inverse_of: :revisions
   belongs_to :textable, polymorphic: true
   belongs_to :user

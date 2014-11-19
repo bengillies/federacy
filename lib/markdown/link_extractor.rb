@@ -1,5 +1,5 @@
-require 'markdown/parser'
-require 'links/resolver'
+require_dependency 'markdown/parser'
+require_dependency 'links/resolver'
 
 module Markdown
 
@@ -159,9 +159,9 @@ module Markdown
         start: startPos,
         end: endPos,
         link_type: :transclusion,
-        tiddler: link[:link] || tiddler_link[:link],
-        space: space_link[:link],
-        user: space_link[:user],
+        tiddler_title: link[:link] || tiddler_link[:link],
+        space_name: space_link[:link],
+        user_name: space_link[:user],
         title: link[:link] || tiddler_link[:link]
       }
     end
@@ -175,9 +175,9 @@ module Markdown
         start: startPos,
         end: endPos,
         link_type: :tiddlyimage,
-        tiddler: image_details[:tiddler],
-        space: image_details[:space],
-        user: image_details[:user],
+        tiddler_title: image_details[:tiddler_title],
+        space_name: image_details[:space_name],
+        user_name: image_details[:user_name],
         link: image_details[:link],
         title: image_details[:title]
       }
@@ -200,9 +200,9 @@ module Markdown
         start: startPos,
         end: endPos,
         link_type: :tiddlylink,
-        tiddler: link[:tiddler_link][:link],
-        space: link[:space_link][:link],
-        user: link[:space_link][:user],
+        tiddler_title: link[:tiddler_link][:link],
+        space_name: link[:space_link][:link],
+        user_name: link[:space_link][:user],
         title: title || link[:tiddler_link][:title] || link[:tiddler_link][:link]
       }
     end
@@ -221,9 +221,9 @@ module Markdown
         start: startPos,
         end: endPos,
         link_type: :tiddlylink,
-        tiddler: nil,
-        space: link[:link],
-        user: link[:user],
+        tiddler_title: nil,
+        space_name: link[:link],
+        user_name: link[:user],
         title: title || link[:title] || link[:link]
       }
     end
@@ -243,9 +243,9 @@ module Markdown
         start: startPos,
         end: endPos,
         link_type: :tiddlylink,
-        tiddler: tiddler,
-        space: nil,
-        user: nil,
+        tiddler_title: tiddler,
+        space_name: nil,
+        user_name: nil,
         link: tiddler ? nil : link[:link],
         title: title || link[:title] || link[:link]
       }

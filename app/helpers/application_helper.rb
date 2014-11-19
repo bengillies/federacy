@@ -1,13 +1,17 @@
-require 'renderer'
+require_dependency 'renderer'
 
 module ApplicationHelper
 
   def renderer
-    Renderer.new self, @current_user, @space
+    Renderer.new(
+      view: self,
+      user: @current_user,
+      space: @space
+    )
   end
 
-  def markdown text
-    renderer.markdown text
+  def markdown text, tiddler=nil
+    renderer.markdown text, tiddler
   end
 
   def render_tiddler tiddler, options

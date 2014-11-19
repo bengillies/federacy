@@ -19,8 +19,8 @@ module Links
 
     def resolve link
 
-      if link[:space_name] || link[:space]
-        space = resolve_space_by_name(link[:space_name] || link[:space])
+      if link[:space_name]
+        space = resolve_space_by_name(link[:space_name])
         unless space
           raise SpaceNotFound
         end
@@ -28,16 +28,16 @@ module Links
         space = resolve_space_by_id(link[:space_id] || @space.id)
       end
 
-      if link[:username] || link[:user]
-        @user = User.find_by_name(link[:username] || link[:user])
+      if link[:user_name]
+        @user = User.find_by_name(link[:user_name])
         unless @user
           raise UserNotFound
         end
       end
       space = visible_to_users(space, @user)
 
-      if space && (link[:tiddler_title] || link[:tiddler])
-        tiddler = resolve_tiddler(space, link[:tiddler_title] || link[:tiddler])
+      if space && (link[:tiddler_title])
+        tiddler = resolve_tiddler(space, link[:tiddler_title])
 
         unless tiddler
           raise TiddlerNotFound

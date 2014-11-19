@@ -9,6 +9,7 @@ class CreateTiddlerRevisionLinks < ActiveRecord::Migration
       t.string :space_name
       t.string :user_name
       t.string :title
+      t.belongs_to :target
       t.belongs_to :tiddler
       t.belongs_to :space
       t.belongs_to :user

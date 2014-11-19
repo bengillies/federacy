@@ -23,9 +23,9 @@ describe Markdown::LinkExtractor do
       start: 0,
       end: 16,
       link_type: :transclusion,
-      tiddler: 'foo',
-      space: 'baz',
-      user: 'bar',
+      tiddler_title: 'foo',
+      space_name: 'baz',
+      user_name: 'bar',
       title: 'foo'
     }])
   end
@@ -36,18 +36,18 @@ describe Markdown::LinkExtractor do
         start: 0,
         end: 10,
         link_type: :tiddlylink,
-        tiddler: 'foo',
-        space: 'baz',
-        user: 'bar',
+        tiddler_title: 'foo',
+        space_name: 'baz',
+        user_name: 'bar',
         title: 'foo'
       },
       {
         start: 12,
         end: 30,
         link_type: :tiddlylink,
-        tiddler: 'bar',
-        space: 'qux',
-        user: 'baz',
+        tiddler_title: 'bar',
+        space_name: 'qux',
+        user_name: 'baz',
         title: 'foo'
       }])
   end
@@ -58,9 +58,9 @@ describe Markdown::LinkExtractor do
         start: 0,
         end: 6,
         link_type: :tiddlylink,
-        tiddler: 'foo',
-        space: nil,
-        user: nil,
+        tiddler_title: 'foo',
+        space_name: nil,
+        user_name: nil,
         link: nil,
         title: 'foo'
       },
@@ -68,9 +68,9 @@ describe Markdown::LinkExtractor do
         start: 8,
         end: 18,
         link_type: :tiddlylink,
-        tiddler: 'bar',
-        space: nil,
-        user: nil,
+        tiddler_title: 'bar',
+        space_name: nil,
+        user_name: nil,
         link: nil,
         title: 'foo'
       }])
@@ -82,36 +82,36 @@ describe Markdown::LinkExtractor do
         start: 0,
         end: 3,
         link_type: :tiddlylink,
-        tiddler: nil,
-        space: 'foo',
-        user: nil,
+        tiddler_title: nil,
+        space_name: 'foo',
+        user_name: nil,
         title: 'foo'
       },
       {
         start: 5,
         end: 16,
         link_type: :tiddlylink,
-        tiddler: nil,
-        space: 'bar',
-        user: nil,
+        tiddler_title: nil,
+        space_name: 'bar',
+        user_name: nil,
         title: 'foo'
       },
       {
         start: 18,
         end: 25,
         link_type: :tiddlylink,
-        tiddler: nil,
-        space: 'bar',
-        user: 'foo',
+        tiddler_title: nil,
+        space_name: 'bar',
+        user_name: 'foo',
         title: 'bar'
       },
       {
         start: 27,
         end: 42,
         link_type: :tiddlylink,
-        tiddler: nil,
-        space: 'baz',
-        user: 'bar',
+        tiddler_title: nil,
+        space_name: 'baz',
+        user_name: 'bar',
         title: 'foo'
       }])
   end
@@ -122,9 +122,9 @@ describe Markdown::LinkExtractor do
         start: 0,
         end: 7,
         link_type: :tiddlyimage,
-        tiddler: 'foo',
-        space: 'bar',
-        user: nil,
+        tiddler_title: 'foo',
+        space_name: 'bar',
+        user_name: nil,
         link: nil,
         title: 'foo'
       },
@@ -132,9 +132,9 @@ describe Markdown::LinkExtractor do
         start: 9,
         end: 16,
         link_type: :tiddlyimage,
-        tiddler: 'foo',
-        space: nil,
-        user: nil,
+        tiddler_title: 'foo',
+        space_name: nil,
+        user_name: nil,
         link: nil,
         title: 'foo'
       },
@@ -142,9 +142,9 @@ describe Markdown::LinkExtractor do
         start: 18,
         end: 37,
         link_type: :tiddlyimage,
-        tiddler: 'bar',
-        space: 'qux',
-        user: 'baz',
+        tiddler_title: 'bar',
+        space_name: 'qux',
+        user_name: 'baz',
         link: nil,
         title: 'foo'
       }])
@@ -156,27 +156,27 @@ describe Markdown::LinkExtractor do
         start: 0,
         end: 17,
         link_type: :transclusion,
-        tiddler: 'foo',
-        space: 'baz',
-        user: 'bar',
+        tiddler_title: 'foo',
+        space_name: 'baz',
+        user_name: 'bar',
         title: 'foo'
       },
       {
         start: 19,
         end: 32,
         link_type: :transclusion,
-        tiddler: 'foo',
-        space: nil,
-        user: nil,
+        tiddler_title: 'foo',
+        space_name: nil,
+        user_name: nil,
         title: 'foo'
       },
       {
         start: 34,
         end: 67,
         link_type: :transclusion,
-        tiddler: 'foo bar',
-        space: 'qux',
-        user: 'baz biz',
+        tiddler_title: 'foo bar',
+        space_name: 'qux',
+        user_name: 'baz biz',
         title: 'foo bar'
       }])
 
@@ -185,9 +185,9 @@ describe Markdown::LinkExtractor do
         start: 2,
         end: 13,
         link_type: :tiddlyimage,
-        tiddler: 'foo',
-        space: 'bar',
-        user: nil,
+        tiddler_title: 'foo',
+        space_name: 'bar',
+        user_name: nil,
         link: nil,
         title: 'foo'
       },
@@ -195,9 +195,9 @@ describe Markdown::LinkExtractor do
         start: 0,
         end: 19,
         link_type: :tiddlylink,
-        tiddler: 'baz',
-        space: nil,
-        user: nil,
+        tiddler_title: 'baz',
+        space_name: nil,
+        user_name: nil,
         link: nil,
         title: 'foo'
       },
@@ -205,9 +205,9 @@ describe Markdown::LinkExtractor do
         start: 23,
         end: 30,
         link_type: :tiddlyimage,
-        tiddler: 'foo',
-        space: 'bar',
-        user: nil,
+        tiddler_title: 'foo',
+        space_name: 'bar',
+        user_name: nil,
         link: nil,
         title: 'foo'
       },
@@ -215,9 +215,9 @@ describe Markdown::LinkExtractor do
         start: 21,
         end: 36,
         link_type: :tiddlylink,
-        tiddler: 'baz',
-        space: nil,
-        user: nil,
+        tiddler_title: 'baz',
+        space_name: nil,
+        user_name: nil,
         link: nil,
         title: 'foo'
       },
@@ -225,9 +225,9 @@ describe Markdown::LinkExtractor do
         start: 40,
         end: 47,
         link_type: :tiddlyimage,
-        tiddler: 'foo',
-        space: nil,
-        user: nil,
+        tiddler_title: 'foo',
+        space_name: nil,
+        user_name: nil,
         link: nil,
         title: 'foo'
       },
@@ -235,18 +235,18 @@ describe Markdown::LinkExtractor do
         start: 38,
         end: 61,
         link_type: :tiddlylink,
-        tiddler: 'bar',
-        space: 'qux',
-        user: 'baz',
+        tiddler_title: 'bar',
+        space_name: 'qux',
+        user_name: 'baz',
         title: 'foo'
       },
       {
         start: 66,
         end: 77,
         link_type: :tiddlyimage,
-        tiddler: 'foo',
-        space: 'qux',
-        user: nil,
+        tiddler_title: 'foo',
+        space_name: 'qux',
+        user_name: nil,
         link: nil,
         title: 'foo'
       },
@@ -254,9 +254,9 @@ describe Markdown::LinkExtractor do
         start: 63,
         end: 87,
         link_type: :tiddlylink,
-        tiddler: nil,
-        space: 'qux',
-        user: 'bar',
+        tiddler_title: nil,
+        space_name: 'qux',
+        user_name: 'bar',
         title: 'foo'
       }])
   end
@@ -267,9 +267,9 @@ describe Markdown::LinkExtractor do
         start: 0,
         end: 25,
         link_type: :tiddlylink,
-        tiddler: nil,
-        space: nil,
-        user: nil,
+        tiddler_title: nil,
+        space_name: nil,
+        user_name: nil,
         link: 'http://example.com',
         title: 'foo'
       }])
@@ -281,9 +281,9 @@ describe Markdown::LinkExtractor do
         start: 0,
         end: 36,
         link_type: :tiddlyimage,
-        tiddler: nil,
-        space: nil,
-        user: nil,
+        tiddler_title: nil,
+        space_name: nil,
+        user_name: nil,
         link: 'http://example.com/image.png',
         title: 'foo'
       }])

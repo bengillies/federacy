@@ -1,36 +1,43 @@
-require 'links/transcluder'
-require 'markdown/renderer'
+require_dependency 'links/transcluder'
+require_dependency 'markdown/renderer'
 
 class Renderer
   attr_reader :space
 
-  def initialize view, user, space, transcluder=nil, tokens=nil
-    @current_user = user
-    @space = space
-    @view = view
-    @tokens = tokens || {
+  def initialize opts
+    @current_user = opts[:user]
+    @space = opts[:space]
+    @view = opts[:view]
+    @tokens = opts[:tokens] || {
       start: SecureRandom.uuid + '_START',
       end: SecureRandom.uuid + '_END'
     }
-    @transcluder = transcluder || Links::Transcluder.new(self, user)
+    @transcluder = opts[:transcluder] || Links::Transcluder.new(self, opts[:user])
   end
 
   def clone space=nil, transcluder=nil
     @transcluder.space = space if space
-    Renderer.new(@view, @current_user, space || @space, transcluder, @tokens)
+    Renderer.new(
+      view: @view,
+      user: @current_user,
+      space: space || @space,
+      transcluder: transcluder,
+      tokens: @tokens
+    )
   end
 
-  def markdown_html
+  def markdown_html tiddler=nil
     @markdown_html ||= Markdown::Renderer.new(
       space: @space,
       tokens: @tokens,
+      tiddler: tiddler,
       with_toc_data: true
     )
   end
 
-  def markdown_renderer space
+  def markdown_renderer space, tiddler=nil
     @markdown_renderer ||= Redcarpet::Markdown.new(
-      markdown_html,
+      markdown_html(tiddler),
       :no_intra_emphasis => true,
       :tables => true,
       :fenced_code_blocks => true,
@@ -42,8 +49,8 @@ class Renderer
     )
   end
 
-  def markdown text
-    text = markdown_renderer(@space).render(text)
+  def markdown text, tiddler=nil
+    text = markdown_renderer(@space, tiddler).render(text)
     @transcluder.transclude(text, @markdown_html.transclusions, @tokens).html_safe
   end
 
@@ -68,7 +75,7 @@ class Renderer
     end
 
     if @transcluder.transcluding? && render_type == :markdown
-      markdown(tiddler.text)
+      markdown(tiddler.text, tiddler)
     else
       @view.render "shared/renderers/#{render_type}.html.erb", object: tiddler
     end

@@ -1,4 +1,4 @@
-require 'links/resolver'
+require_dependency 'links/resolver'
 
 class ShortLinksController < ApplicationController
   respond_to :html, :json

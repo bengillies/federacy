@@ -1,19 +1,17 @@
 # TODO:
-#  - make renderer use new RevisionLinks
 #  - add in backlinks to tiddler/revision view
-#  - use shortlinks if space/tiddler property is nil
 #  - make shortlinks open up /new page if 404
 
-require 'links/resolver'
+require_dependency 'links/resolver'
 
 module Links
 
   class Builder
-    def initialize old_revision, new_revision
+    def initialize space, user, old_revision, new_revision
       @old_revision = old_revision
       @new_revision = new_revision
-      @current_user = old_revision.user
-      @space = old_revision.tiddler.space
+      @current_user = user
+      @space = space
     end
 
     def create_links body
@@ -24,22 +22,22 @@ module Links
       old_links = @old_revision.links
 
       links.each do |link|
+        revision_link = @new_revision.revision_links.build(to_revision_link(link))
+
         old_link = find_matching_link(old_links, link)
         if old_link
-          revision_link = @new_revision.revision_links.build(old_link.as_json)
-          revision_link.start = link[:start]
-          revision_link.end = link[:end]
-          revision_link.id = nil
-        else
-          revision_link = @new_revision.revision_links.build(to_revision_link(link))
+          revision_link.user_id = old_link.user_id if old_link.user_id
+          revision_link.space_id = old_link.space_id if old_link.space_id
+          revision_link.tiddler = old_link.tiddler if old_link.tiddler
+          revision_link.target = old_link.tiddler.current_revision if old_link.tiddler
         end
 
-        if revision_link.tiddler &&
-            revision_link.tiddler.id == @old_revision.id
-          revision_link.tiddler = @new_revision
+        if revision_link.target &&
+            revision_link.target.id == @old_revision.id
+          revision_link.target = @new_revision
         else
-          revision_link.tiddler = revision_link.tiddler &&
-            revision_link.tiddler.tiddler.current_revision
+          revision_link.target = revision_link.target &&
+            revision_link.target.tiddler.current_revision
         end
       end
 
@@ -51,7 +49,7 @@ module Links
       unless link[:link]
         begin
           resolver = Links::Resolver.new(@current_user, @space)
-          if link[:tiddler]
+          if link[:tiddler_title]
             space, tiddler = resolver.resolve(link)
           else
             space = resolver.resolve(link)
@@ -70,11 +68,11 @@ module Links
         end: link[:end],
         link_type: link[:link_type],
         link: link[:link],
-        tiddler_title: link[:tiddler],
-        space_name: link[:space],
-        user_name: link[:user],
+        tiddler_title: link[:tiddler_title],
+        space_name: link[:space_name],
+        user_name: link[:user_name],
         space: space,
-        tiddler: tiddler && tiddler.current_revision,
+        target: tiddler && tiddler.current_revision,
         user: user,
         title: link[:title],
       }
@@ -85,13 +83,14 @@ module Links
     # rather than trying to find a tiddler all over again.
     def find_matching_link old_links, link
       return false if link[:link]
-      return false unless link[:tiddler] || link[:space]
+      return false unless link[:tiddler_title] || link[:space_name]
 
       old_links.find do |old_link|
-        link[:tiddler] == old_link.tiddler_title &&
-          link[:space] == old_link.space_name &&
-          link[:user] == old_link.user_name &&
-          link[:title] == old_link.title
+        link[:tiddler_title] == old_link.tiddler_title &&
+          link[:space_name] == old_link.space_name &&
+          link[:user_name] == old_link.user_name &&
+          link[:title] == old_link.title &&
+          link[:link_type].to_s == old_link.link_type.to_s
       end
     end
   end
