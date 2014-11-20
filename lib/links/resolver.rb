@@ -7,7 +7,8 @@ module Links
   class Resolver
     attr_reader :user
 
-    def initialize user, space=nil
+    def initialize root_url, user, space=nil
+      @root_url = root_url
       @current_user = user
       @space = space
     end
@@ -17,8 +18,41 @@ module Links
       not (link.start_with?('/') || /([A-Za-z]{3,9}:(?:\/\/)?)/.match(link))
     end
 
-    def resolve link
+    def local? url
+      url.start_with?('/') || url.start_with?(@root_url)
+    end
 
+    def path url
+      URI.parser.parse(url).path
+    end
+
+    # turn a link to a url into a link obj that, if possible, also includes
+    # tiddler/space info
+    def extract_link_info link_obj
+      # match all shortlinks and standard links to tiddlers, spaces and revisions
+      # using named captures. Don't match links to lists of things.
+      link_matcher = /^(?:(?:(?:(?:\/u\/(?<user_name>[^\/\?]+))\/(?<space_name>[^\/\?]+)(?:\/(?<tiddler_title>[^\/\?\.]+))?)|(?:\/s\/(?<space_name>[^\/\?]+)(?:\/(?<tiddler_title>[^\/\?\.]+))?)|(?:\/spaces\/(?<space_id>[^\/\?]+)\/t\/(?<tiddler_title>[^\/\?\.]+)))|(?:\/spaces\/(?<space_id>[^\/\?\.]+)(?:\/tiddlers\/(?<tiddler_id>[^\/\?\.]+)(?:\/revisions\/(?<target_id>[^\/\?\.]+))?)?))/
+
+      link = link_obj[:link]
+      return link_obj unless local? link
+      link = path(link)
+      match = link_matcher.match(link)
+
+      if match
+        link_obj.clone.merge(
+          tiddler_title: match[:tiddler_title],
+          space_name:    match[:space_name],
+          user_name:     match[:user_name],
+          tiddler_id:    match[:tiddler_id] && match[:tiddler_id].to_i,
+          space_id:      match[:space_id] && match[:space_id].to_i,
+          target_id:     match[:target_id] && match[:target_id].to_i
+        )
+      else
+        link_obj.clone
+      end
+    end
+
+    def resolve link
       if link[:space_name]
         space = resolve_space_by_name(link[:space_name])
         unless space

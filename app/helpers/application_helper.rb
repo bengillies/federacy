@@ -6,7 +6,8 @@ module ApplicationHelper
     Renderer.new(
       view: self,
       user: @current_user,
-      space: @space
+      space: @space,
+      root_url: root_url
     )
   end
 

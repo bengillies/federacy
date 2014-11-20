@@ -3,22 +3,24 @@ require_dependency 'links/resolver'
 module Links
 
   class Builder
-    def initialize space, user, old_revision, new_revision
+    def initialize root_url, space, user, old_revision
+      @root_url = root_url
       @old_revision = old_revision
-      @new_revision = new_revision
       @current_user = user
       @space = space
     end
 
-    def create_links body
+    def create_links new_revision, body
       return unless body.linkable?
+
+      new_revision = new_revision
 
       links = Markdown::LinkExtractor.new(body.text).extract_links
 
       old_links = @old_revision.links
 
       links.each do |link|
-        revision_link = @new_revision.revision_links.build(to_revision_link(link))
+        revision_link = new_revision.revision_links.build(to_revision_link(link))
 
         old_link = find_matching_link(old_links, link)
         if old_link
@@ -30,21 +32,21 @@ module Links
 
         if revision_link.target &&
             revision_link.target.id == @old_revision.id
-          revision_link.target = @new_revision
+          revision_link.target = new_revision
         else
           revision_link.target = revision_link.target &&
             revision_link.target.tiddler.current_revision
         end
       end
 
-      @new_revision.revision_links
+      new_revision.revision_links
     end
 
     # turn an extracted link into a link to an actual tiddler/space
     def to_revision_link link
+      resolver = Links::Resolver.new(@root_url, @current_user, @space)
       unless link[:link]
         begin
-          resolver = Links::Resolver.new(@current_user, @space)
           if link[:tiddler_title]
             space, tiddler = resolver.resolve(link)
           else
@@ -57,20 +59,24 @@ module Links
         end
       else
         space = tiddler = user = nil
+        link = resolver.extract_link_info(link)
       end
 
       {
         start: link[:start],
-        end: link[:end],
-        link_type: link[:link_type],
-        link: link[:link],
-        tiddler_title: link[:tiddler_title],
-        space_name: link[:space_name],
-        user_name: link[:user_name],
-        space: space,
-        target: tiddler && tiddler.current_revision,
-        user: user,
-        title: link[:title],
+        end:            link[:end],
+        link_type:      link[:link_type],
+        link:           link[:link],
+        tiddler_title:  link[:tiddler_title],
+        space_name:     link[:space_name],
+        user_name:      link[:user_name],
+        space:          space,
+        target:         tiddler && tiddler.current_revision,
+        user:           user,
+        title:          link[:title],
+        space_id:       link[:space_id],
+        tiddler_id:     link[:tiddler_id],
+        target_id:      link[:target_id]
       }
     end
 

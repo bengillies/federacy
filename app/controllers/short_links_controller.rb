@@ -5,7 +5,7 @@ class ShortLinksController < ApplicationController
 
   def show_space
     begin
-      redirect_to Links::Resolver.new(current_user).resolve(params)
+      redirect_to link_resolver.resolve(params)
     rescue Links::SpaceNotFound
       not_found(:space)
     end
@@ -13,7 +13,7 @@ class ShortLinksController < ApplicationController
 
   def show_tiddler
     begin
-      redirect_to Links::Resolver.new(current_user).resolve(params)
+      redirect_to link_resolver.resolve(params)
     rescue Links::SpaceNotFound
       not_found(:space)
     rescue Links::TiddlerNotFound
@@ -23,7 +23,7 @@ class ShortLinksController < ApplicationController
 
   def show_space_tiddler
     begin
-      redirect_to Links::Resolver.new(current_user).resolve(params)
+      redirect_to link_resolver.resolve(params)
     rescue Links::SpaceNotFound
       not_found(:space)
     rescue Links::TiddlerNotFound
@@ -33,7 +33,7 @@ class ShortLinksController < ApplicationController
 
   def show_user_space
     begin
-      redirect_to Links::Resolver.new(current_user).resolve(params)
+      redirect_to link_resolver.resolve(params)
     rescue Links::SpaceNotFound
       not_found(:space)
     end
@@ -41,12 +41,18 @@ class ShortLinksController < ApplicationController
 
   def show_user_space_tiddler
     begin
-      redirect_to Links::Resolver.new(current_user).resolve(params)
+      redirect_to link_resolver.resolve(params)
     rescue Links::SpaceNotFound
       not_found(:space)
     rescue Links::TiddlerNotFound
       not_found(:tiddler)
     end
+  end
+
+  private
+
+  def link_resolver
+    Links::Resolver.new(root_url, current_user)
   end
 
 end

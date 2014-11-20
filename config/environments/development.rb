@@ -1,4 +1,7 @@
 Rails.application.configure do
+
+  host_name = 'localhost:3000'
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # In the development environment your application's code is reloaded on
@@ -37,5 +40,6 @@ Rails.application.configure do
 
   config.serve_static_assets = true
 
-  config.action_mailer.default_url_options = { host: 'localhost:3000' }
+  config.action_mailer.default_url_options = { host: host_name }
+  config.action_controller.default_url_options = { host: host_name }
 end

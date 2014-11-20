@@ -5,8 +5,9 @@ module Links
   class Transcluder
     attr_accessor :space
 
-    def initialize renderer, user
+    def initialize root_url, renderer, user
       @renderer = renderer
+      @root_url = root_url
       @current_user = user
       @transcluding = []
     end
@@ -26,7 +27,7 @@ module Links
       text = text.gsub(/(?:<p>)?#{tokens[:start]}(.*?)#{tokens[:end]}(?:<\/p>)?/m) do |match|
         transclusion = $1
         begin
-          new_space, tiddler = Links::Resolver.new(@current_user, current_space)
+          new_space, tiddler = Links::Resolver.new(@root_url, @current_user, current_space)
             .resolve(retrieve_link(links, $1[/href="([^"]+)"/m, 1]))
 
           unless @transcluding.include?(tiddler.id)

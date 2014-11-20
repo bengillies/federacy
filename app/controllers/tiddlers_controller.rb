@@ -1,3 +1,5 @@
+require_dependency 'links/builder'
+
 class TiddlersController < ApplicationController
   include Filterable
 
@@ -45,7 +47,7 @@ class TiddlersController < ApplicationController
   def create
     @tiddler = @space.tiddlers.build user_id: current_user.id
     return forbidden(:create, :tiddler) unless create_tiddler?
-    @tiddler.new_revision @space, tiddler_params
+    @tiddler.new_revision link_builder, @tiddler_params
 
     respond_with do |format|
       if @tiddler.save
@@ -73,10 +75,10 @@ class TiddlersController < ApplicationController
     end
 
     if request.patch?
-      @tiddler.new_revision_from_previous @tiddler.current_revision.id,
+      @tiddler.new_revision_from_previous link_builder, @tiddler.current_revision.id,
         tiddler_params
     else
-      @tiddler.new_revision @space, tiddler_params
+      @tiddler.new_revision link_builder, tiddler_params
     end
 
     respond_with do |format|
@@ -134,5 +136,9 @@ class TiddlersController < ApplicationController
         whitelisted[:tags] = params[:tiddler][:tags] if params[:tiddler][:tags].class == String
         whitelisted[:current_user] = current_user
       end
+  end
+
+  def link_builder
+    Links::Builder.new(root_url, @space, current_user, @tiddler.current_revision)
   end
 end

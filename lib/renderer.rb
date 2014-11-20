@@ -8,11 +8,12 @@ class Renderer
     @current_user = opts[:user]
     @space = opts[:space]
     @view = opts[:view]
+    @root_url = opts[:root_url]
     @tokens = opts[:tokens] || {
       start: SecureRandom.uuid + '_START',
       end: SecureRandom.uuid + '_END'
     }
-    @transcluder = opts[:transcluder] || Links::Transcluder.new(self, opts[:user])
+    @transcluder = opts[:transcluder] || Links::Transcluder.new(@root_url, self, opts[:user])
   end
 
   def clone space=nil, transcluder=nil
@@ -22,7 +23,8 @@ class Renderer
       user: @current_user,
       space: space || @space,
       transcluder: transcluder,
-      tokens: @tokens
+      tokens: @tokens,
+      root_url: @root_url
     )
   end
 
