@@ -50,6 +50,7 @@ module Markdown
       standard_link
       image_link
       footer_image
+      inline_link
     ).map(&:to_sym)
 
     def initialize markdown
@@ -312,6 +313,33 @@ module Markdown
           title: link[:title] || link[:title_and_reference]
         }
       end
+    end
+
+    def format_inline_link link
+      startPos, endPos = link_pos(link)
+      link_target = link[:link]
+
+      if /\.$/.match(link[:link].to_s) && !link.has_key?(:close)
+        link_target = link[:link].to_s.gsub(/\.$/, '')
+        endPos -= 1
+      end
+
+      if /^[^a-zA-Z]/.match(link[:link].to_s) && !link.has_key?(:open)
+        link_target = link_target.to_s.gsub(/^[^a-zA-Z]/m, '')
+        startPos += 1
+      end
+
+      if !link.has_key?(:open) && !/^((https?|ftp):\/\/)|www\./.match(link_target)
+        return nil
+      end
+
+      {
+        start: startPos,
+        end: endPos,
+        link_type: :inline_link,
+        link: link_target,
+        title: link_target
+      }
     end
   end
 

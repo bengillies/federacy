@@ -360,4 +360,34 @@ describe Markdown::LinkExtractor do
       .to eq([])
   end
 
+  it 'extracts inline links' do
+    expect(Markdown::LinkExtractor.new("<http://foo.com.> www.bar.com. http://baz.com").extract_links)
+      .to eq([{
+        start: 0,
+        end: 16,
+        link_type: :inline_link,
+        link: 'http://foo.com.',
+        title: 'http://foo.com.'
+      },
+      {
+        start: 18,
+        end: 28,
+        link_type: :inline_link,
+        link: 'www.bar.com',
+        title: 'www.bar.com'
+      },
+      {
+        start: 31,
+        end: 44,
+        link_type: :inline_link,
+        link: 'http://baz.com',
+        title: 'http://baz.com'
+      }])
+  end
+
+  it 'doesn\'t recognise inline links in the middle of words' do
+    expect(Markdown::LinkExtractor.new("foohttps://bar.com").extract_links)
+      .to eq([])
+  end
+
 end

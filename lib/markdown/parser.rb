@@ -10,6 +10,7 @@ module Markdown
       tiddlyimage |
       tiddlylink |
       markdown_link |
+      inline_link |
       char
     end
 
@@ -395,6 +396,41 @@ module Markdown
         footer_reference_without_angles_with_title |
         footer_reference_without_angles
       ).as(:footer_reference) >> eol?
+    end
+
+    ##
+    # Inline links
+    #
+    # An inline link is a link that's either enclosed in angle brackets, or
+    # starts with either http, https, ftp, or www.
+    #
+    # As we only need these to extract tiddlers and spaces, we don't care about
+    # matching things like query strings
+    # #
+
+    rule(:angle_link) do
+      str('<').as(:open) >>
+      (str('>').absent? >> whitespace.absent? >> any).repeat(1).as(:link) >>
+      str('>').as(:close)
+    end
+
+    rule(:autolink_start) do
+      dynamic do |source, context|
+        if source.pos.charpos == 0
+          match('.').present?
+        else
+          match('[a-zA-Z]').absent? >> any
+        end
+      end >>
+      (str('http://') | str('https://') | str('ftp://') | str('www.'))
+    end
+
+    rule(:autolink) do
+      (autolink_start >> match("[\\w\\-\\.\\/:]").repeat(1)).as(:link)
+    end
+
+    rule(:inline_link) do
+      (angle_link | autolink).as(:inline_link)
     end
 
     ##

@@ -189,6 +189,38 @@ describe Markdown::Parser do
     end
   end
 
+  describe 'inline links' do
+    it 'should parse links in angle brackets' do
+      expect(parser.parse('<http://example.com/foo/bar/baz>')).to contain_parsed_output({
+        inline_link: { open: '<', close: '>', link: 'http://example.com/foo/bar/baz' }
+      })
+    end
+
+    it 'should parse auto links' do
+      expect(parser.parse('http://example.com/foo/bar/baz')).to contain_parsed_output({
+        inline_link: { link: 'http://example.com/foo/bar/baz' }
+      })
+
+      expect(parser.parse('https://example.com/foo/bar/baz')).to contain_parsed_output({
+        inline_link: { link: 'https://example.com/foo/bar/baz' }
+      })
+
+      expect(parser.parse('ftp://example.com/foo/bar/baz')).to contain_parsed_output({
+        inline_link: { link: 'ftp://example.com/foo/bar/baz' }
+      })
+
+      expect(parser.parse('www.example.com:3000/foo/bar/baz')).to contain_parsed_output({
+        inline_link: { link: 'www.example.com:3000/foo/bar/baz' }
+      })
+    end
+
+    it 'should handle multiple links' do
+      expect(parser.parse('www.example.com http://foo.com')).to contain_parsed_output({
+        inline_link: [{ link: 'www.example.com' }, { link: ' http://foo.com' }]
+      })
+    end
+  end
+
   describe 'code blocks' do
     it 'should recognise code blocks' do
       expect(parser.parse("```\nfoo\n```")).to contain_parsed_output({

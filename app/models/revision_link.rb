@@ -12,7 +12,8 @@ class RevisionLink < ActiveRecord::Base
     :tiddlyimage,
     :transclusion,
     :markdown_link,
-    :markdown_image
+    :markdown_image,
+    :inline_link
   ]
 
   validates_presence_of :title, :start, :end, :link_type
