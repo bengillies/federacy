@@ -479,8 +479,8 @@ module Markdown
       ).as(:tiddler_image)
     end
 
-    rule(:transclusion_start) { str('{{{').as(:open) }
-    rule(:transclusion_end) { str('}}}').as(:close) }
+    rule(:transclusion_start) { str('{{').as(:open) }
+    rule(:transclusion_end) { str('}}').as(:close) }
     rule(:transclusion_tiddler) do
       tiddlylink_inside_transclusion |
       tiddlylink |
