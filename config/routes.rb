@@ -10,7 +10,11 @@ Rails.application.routes.draw do
     get 't/:tiddler_title', to: 'short_links#show_tiddler', as: 'short_tiddler'
 
     resources :tiddlers do
-      resources :revisions
+      resources :revisions do
+        resources :links
+      end
+      resources :links
+      resources :backlinks
     end
   end
 
