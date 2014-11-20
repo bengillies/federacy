@@ -66,7 +66,11 @@ class Tiddler < ActiveRecord::Base
   }
 
   scope :visible_to_user, ->(user) {
-    scope = joins(:space_users).where(space_users: { user: user })
+    if user
+      joins(:space_users).where(space_users: { user: user })
+    else
+      joins(:space).where(spaces: { space_type: Space.space_types[:open] })
+    end
   }
 
   def creator
