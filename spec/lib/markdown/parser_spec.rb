@@ -510,68 +510,68 @@ describe Markdown::Parser do
 
   describe 'transclusions' do
     it 'should handle simple transclusions' do
-      expect(parser.parse('{{{tiddler title}}}')).to contain_parsed_output({
-        transclusion: { open: '{{{', link: 'tiddler title', close: '}}}' }
+      expect(parser.parse('{{tiddler title}}')).to contain_parsed_output({
+        transclusion: { open: '{{', link: 'tiddler title', close: '}}' }
       })
 
-      expect(parser.parse("foo\n{{{tiddler title}}}\nbar")).to contain_parsed_output({
-        transclusion: { open: '{{{', link: 'tiddler title', close: '}}}' }
+      expect(parser.parse("foo\n{{tiddler title}}\nbar")).to contain_parsed_output({
+        transclusion: { open: '{{', link: 'tiddler title', close: '}}' }
       })
 
-      expect(parser.parse("\n{{{tiddler title}}}")).to contain_parsed_output({
-        transclusion: { open: '{{{', link: 'tiddler title', close: '}}}' }
+      expect(parser.parse("\n{{tiddler title}}")).to contain_parsed_output({
+        transclusion: { open: '{{', link: 'tiddler title', close: '}}' }
       })
     end
 
     it 'should not recognise transclusions that are not at the block level' do
-      expect(parser.parse("foo {{{tiddler title}}}")).to contain_parsed_output({
-        text: "foo {{{tiddler title}}}"
+      expect(parser.parse("foo {{tiddler title}}")).to contain_parsed_output({
+        text: "foo {{tiddler title}}"
       })
     end
 
     it 'should handle transclusions using tiddly links' do
-      expect(parser.parse('{{{[[tiddler title]]}}}')).to contain_parsed_output({
-        transclusion: { open: '{{{', tiddler_link: { open: '[[', link: 'tiddler title' , close: ']]'}, close: '}}}' }
+      expect(parser.parse('{{[[tiddler title]]}}')).to contain_parsed_output({
+        transclusion: { open: '{{', tiddler_link: { open: '[[', link: 'tiddler title' , close: ']]'}, close: '}}' }
       })
 
-      expect(parser.transclusion.parse('{{{tiddler-title@space}}}')).to contain_parsed_output({
+      expect(parser.transclusion.parse('{{tiddler-title@space}}')).to contain_parsed_output({
         transclusion: {
-          open: '{{{',
+          open: '{{',
           tiddler_space_link: {
             tiddler_link: { link: 'tiddler-title' },
             space_link: { at: '@', link: 'space' }
           },
-         close: '}}}'
+         close: '}}'
         }
       })
 
-      expect(parser.transclusion.parse('{{{tiddler-title@user:space}}}')).to contain_parsed_output({
+      expect(parser.transclusion.parse('{{tiddler-title@user:space}}')).to contain_parsed_output({
         transclusion: {
-          open: '{{{',
+          open: '{{',
           tiddler_space_link: {
             tiddler_link: { link: 'tiddler-title' },
             space_link: { at: '@', user: 'user', link: 'space' }
           },
-          close: '}}}'
+          close: '}}'
         }
       })
 
-      expect(parser.parse('{{{[[tiddler title]]@[[user name:space name]]}}}')).to contain_parsed_output({
+      expect(parser.parse('{{[[tiddler title]]@[[user name:space name]]}}')).to contain_parsed_output({
         transclusion: {
-          open: '{{{',
+          open: '{{',
           tiddler_space_link: {
             tiddler_link: { open: '[[', link: 'tiddler title', close: ']]' },
             space_link: { open: '[[', at: '@',  user: 'user name', link: 'space name', close: ']]' }
           },
-          close: '}}}'
+          close: '}}'
         }
       })
     end
 
     it 'should handle transclusions using tiddly images' do
-      expect(parser.parse('{{{![[tiddler title]]}}}')).to contain_parsed_output({
+      expect(parser.parse('{{![[tiddler title]]}}')).to contain_parsed_output({
         transclusion: {
-          open: '{{{',
+          open: '{{',
           tiddler_image: {
             image_open: '!',
             tiddler_link: {
@@ -580,13 +580,13 @@ describe Markdown::Parser do
               close: ']]'
             }
           },
-          close: '}}}'
+          close: '}}'
         }
       })
 
-      expect(parser.transclusion.parse('{{{!tiddler-title@space}}}')).to contain_parsed_output({
+      expect(parser.transclusion.parse('{{!tiddler-title@space}}')).to contain_parsed_output({
         transclusion: {
-          open: '{{{',
+          open: '{{',
           tiddler_image: {
             image_open: '!',
             tiddler_space_link: {
@@ -594,13 +594,13 @@ describe Markdown::Parser do
               space_link: { at: '@', link: 'space' }
             }
           },
-          close: '}}}'
+          close: '}}'
         }
       })
 
-      expect(parser.transclusion.parse('{{{!tiddler-title@user:space}}}')).to contain_parsed_output({
+      expect(parser.transclusion.parse('{{!tiddler-title@user:space}}')).to contain_parsed_output({
         transclusion: {
-          open: '{{{',
+          open: '{{',
           tiddler_image: {
             image_open: '!',
             tiddler_space_link: {
@@ -608,13 +608,13 @@ describe Markdown::Parser do
               space_link: { at: '@', user: 'user', link: 'space' }
             }
           },
-          close: '}}}'
+          close: '}}'
         }
       })
 
-      expect(parser.parse('{{{![[tiddler title]]@[[user name:space name]]}}}')).to contain_parsed_output({
+      expect(parser.parse('{{![[tiddler title]]@[[user name:space name]]}}')).to contain_parsed_output({
         transclusion: {
-          open: '{{{',
+          open: '{{',
           tiddler_image: {
             image_open: '!',
             tiddler_space_link: {
@@ -628,7 +628,7 @@ describe Markdown::Parser do
               }
             }
           },
-          close: '}}}'
+          close: '}}'
         }
       })
     end

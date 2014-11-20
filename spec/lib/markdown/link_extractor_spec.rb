@@ -15,13 +15,14 @@ describe Markdown::LinkExtractor do
       standard_link
       image_link
       footer_image
+      inline_link
     ).map(&:to_sym))
   end
 
   it 'extracts transclusions' do
-    expect(Markdown::LinkExtractor.new("{{{foo@bar:baz}}}").extract_links).to eq([{
+    expect(Markdown::LinkExtractor.new("{{foo@bar:baz}}").extract_links).to eq([{
       start: 0,
-      end: 16,
+      end: 14,
       link_type: :transclusion,
       tiddler_title: 'foo',
       space_name: 'baz',
@@ -151,10 +152,10 @@ describe Markdown::LinkExtractor do
   end
 
   it 'extracts embedded image links' do
-    expect(Markdown::LinkExtractor.new("{{{!foo@bar:baz}}}\n{{{![[foo]]}}}\n{{{![[foo bar]]@[[baz biz:qux]]}}}").extract_links)
+    expect(Markdown::LinkExtractor.new("{{!foo@bar:baz}}\n{{![[foo]]}}\n{{![[foo bar]]@[[baz biz:qux]]}}").extract_links)
       .to eq([{
         start: 0,
-        end: 17,
+        end: 15,
         link_type: :transclusion,
         tiddler_title: 'foo',
         space_name: 'baz',
@@ -162,8 +163,8 @@ describe Markdown::LinkExtractor do
         title: 'foo'
       },
       {
-        start: 19,
-        end: 32,
+        start: 17,
+        end: 28,
         link_type: :transclusion,
         tiddler_title: 'foo',
         space_name: nil,
@@ -171,8 +172,8 @@ describe Markdown::LinkExtractor do
         title: 'foo'
       },
       {
-        start: 34,
-        end: 67,
+        start: 30,
+        end: 61,
         link_type: :transclusion,
         tiddler_title: 'foo bar',
         space_name: 'qux',
