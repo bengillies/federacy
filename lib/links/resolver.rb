@@ -5,7 +5,7 @@ module Links
   class UserNotFound < StandardError; end
 
   class Resolver
-    attr_reader :user
+    attr_reader :user, :found_space
 
     def initialize root_url, user, space=nil
       @root_url = root_url
@@ -54,12 +54,12 @@ module Links
 
     def resolve link
       if link[:space_name]
-        space = resolve_space_by_name(link[:space_name])
+        @found_space = space = resolve_space_by_name(link[:space_name])
         unless space
           raise SpaceNotFound
         end
       else
-        space = resolve_space_by_id(link[:space_id] || @space.id)
+        @found_space = space = resolve_space_by_id(link[:space_id] || @space.id)
       end
 
       if link[:user_name]

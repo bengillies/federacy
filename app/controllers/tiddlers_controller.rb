@@ -47,7 +47,7 @@ class TiddlersController < ApplicationController
   def create
     @tiddler = @space.tiddlers.build user_id: current_user.id
     return forbidden(:create, :tiddler) unless create_tiddler?
-    @tiddler.new_revision link_builder, @tiddler_params
+    @tiddler.new_revision link_builder, tiddler_params
 
     respond_with do |format|
       if @tiddler.save

@@ -6,7 +6,7 @@
   <h1>New Tiddler</h1>
 
   <%= form_for @tiddler, url: { action: "create" } do |f| %>
-    <%= f.text_field :title %>
+    <%= f.text_field :title, value: params[:title] %>
     <% if params[:type] == 'file' %>
       <%= f.file_field :file %>
     <% else %>

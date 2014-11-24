@@ -6,7 +6,7 @@
   <h1>New Space</h1>
 
   <%= form_for @space, url: { action: "create" } do |f| %>
-    <%= f.text_field :name %>
+    <%= f.text_field :name, value: params[:name] %>
     <%= f.text_area :description %>
     <%= f.select :space_type, [["Readable By Everyone", :open], ["Only visible to space members", :members_only]] %>
     <%= f.submit "Create" %>
