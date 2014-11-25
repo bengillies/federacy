@@ -2,7 +2,7 @@ class AddBinarySupport < ActiveRecord::Migration
   def change
 
     create_table :text_revisions do |t|
-      t.string :text
+      t.text :text
       t.string :content_type
       t.integer :tiddler_id
     end

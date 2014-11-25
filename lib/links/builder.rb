@@ -58,27 +58,31 @@ module Links
         rescue SpaceNotFound, TiddlerNotFound, UserNotFound
           space = tiddler = user = nil
         end
+        link_targets = {
+          space:  space,
+          target: tiddler && tiddler.current_revision,
+          user:   user
+        }
       else
         space = tiddler = user = nil
         link = resolver.extract_link_info(link)
+        link_targets = {
+          space_id:       link[:space_id],
+          tiddler_id:     link[:tiddler_id],
+          target_id:      link[:target_id]
+        }
       end
 
-      {
-        start: link[:start],
+      revision_link = {
+        start:          link[:start],
         end:            link[:end],
         link_type:      link[:link_type],
         link:           link[:link],
         tiddler_title:  link[:tiddler_title],
         space_name:     link[:space_name],
         user_name:      link[:user_name],
-        space:          space,
-        target:         tiddler && tiddler.current_revision,
-        user:           user,
-        title:          link[:title],
-        space_id:       link[:space_id],
-        tiddler_id:     link[:tiddler_id],
-        target_id:      link[:target_id]
-      }
+        title:          link[:title]
+      }.merge(link_targets)
     end
 
     # Find a link from old_links that exactly matches the new link provided. If

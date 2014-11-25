@@ -75,7 +75,7 @@ module Markdown
         if @tiddler && @tiddler.class == Revision
           new_link += "/revisions/#{link[:target_id]}"
         end
-      else
+      elsif link[:tiddler_title]
         new_link += "/t/#{link[:tiddler_title]}"
       end
 
@@ -91,10 +91,12 @@ module Markdown
     end
 
     def render_link link
-      link[:link] = (link[:link] || resolve_link(link)).gsub(/(\(|\))/, "\\\\\\1")
       # escape brackets so they don't clash with any markdown
+      link[:link] = (link[:link] || resolve_link(link)).gsub(/(\(|\))/, "\\\\\\1")
+      link[:title] = link[:title].gsub(/(\[|\])/, "\\\\\\1") unless link[:embedded]
+
       LINK_MAPPINGS[link[:link_type]] % {
-        title: (link[:title].gsub(/(\[|\])/, "\\\\\\1") unless link[:embedded]),
+        title: link[:title],
         link: link[:link],
         start: @tokens[:start],
         end:   @tokens[:end]

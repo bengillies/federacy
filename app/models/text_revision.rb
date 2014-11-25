@@ -16,7 +16,7 @@ class TextRevision < ActiveRecord::Base
   end
 
   def linkable?
-    content_type == 'text/x-markdown' || content_type == nil
+    content_type == 'text/x-markdown' || content_type.blank?
   end
 
   protected
