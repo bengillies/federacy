@@ -1,4 +1,3 @@
-require_dependency 'diff'
 require_dependency 'links/resolver'
 
 class DiffController < ApplicationController
