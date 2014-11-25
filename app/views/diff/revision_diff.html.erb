@@ -1,0 +1,60 @@
+<% content_for :title do %>
+  <%= @tiddler.title %> - Comparison - <%= @space %> - Federacy
+<% end %>
+
+<% content_for :nav do %>
+  <%= link_to("New Tiddler", new_space_tiddler_path) if user_can?(:create_tiddler, @space) %>
+<% end %>
+
+<main>
+  <header>
+    <h1>Comparison of <%= @tiddler.title %> revisions</h1>
+    <p>Changes from revision <%= @diff.old.id %> to revision <%= @diff.new.id %></p>
+  </header>
+  <article class="tiddler">
+    <header>
+      <h2><%= @diff.html["title"].html_safe %></h2>
+    </header>
+    <% if @diff.old.binary? || @diff.new.binary? %>
+      <div class="diff">
+        <ul>
+          <li class="del"><span><del>
+            <%= render_tiddler @diff.old, content_type: @diff.old.content_type %>
+          </del></span></li>
+          <li class="ins"><span><ins>
+            <%= render_tiddler @diff.new, content_type: @diff.new.content_type %>
+          </ins></span></li>
+        </ul>
+      </div>
+    <% else %>
+      <%= @diff.html["text"].html_safe %>
+    <% end %>
+
+    <footer>
+      <dl>
+        <dt>Created</dt>
+        <dd><%= @diff.html["created"].html_safe %></dd>
+        <dt>User ID</dt>
+        <dd><%= @diff.html["user_id"].html_safe %></dd>
+        <% if @diff.html["tags"] %>
+          <dt>Tags</dt>
+          <dd><%= @diff.html["tags"].html_safe %></dd>
+        <% end %>
+        <dt>Content Type</dt>
+        <dd><%= @diff.html["content_type"].html_safe %></dd>
+        <% if @diff.html["fields"] %>
+          <dt>Fields</dt>
+          <dd>
+            <dl class="fields">
+              <% @diff.html["fields"].each do |field, value| %>
+                <dt><%= field %></dt>
+                <dd><%= value.html_safe %></dd>
+              <% end %>
+            </dl>
+          </dd>
+        <% end %>
+      </dl>
+    </footer>
+  </article>
+</main>
+

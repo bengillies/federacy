@@ -1,0 +1,19 @@
+<% content_for :title do %>
+  Space Comparison - Federacy
+<% end %>
+
+<main>
+  <header>
+    <h1>Changes from <%= link_to(@diff.old.name, params[:old]) %> to <%= link_to(@diff.new.name, params[:new]) %></h1>
+  </header>
+
+  <article class="space">
+    <section>
+      <h2><%= @diff.html["name"].html_safe %></h2>
+      <div><%= @diff.html["description"].html_safe %></div>
+    </section>
+  </article>
+</main>
+
+
+

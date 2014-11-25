@@ -59,6 +59,7 @@ GEM
       thread_safe (~> 0.1)
       warden (~> 1.2.3)
     diff-lcs (1.2.5)
+    diffy (3.0.7)
     erubis (2.7.0)
     execjs (2.0.2)
     has_scope (0.5.1)
@@ -166,6 +167,7 @@ DEPENDENCIES
   coffee-rails (~> 4.0.0)
   debugger (~> 1.6.6)
   devise (~> 3.2.4)
+  diffy (~> 3.0.7)
   has_scope (~> 0.5.1)
   jquery-rails
   mini_magick (~> 3.7.0)

@@ -1,4 +1,5 @@
 require_dependency 'links/resolver'
+require_dependency 'markdown/link_extractor'
 
 module Links
 

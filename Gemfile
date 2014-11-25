@@ -36,6 +36,9 @@ gem 'devise', '~> 3.2.4'
 # Filtering tiddlers
 gem 'has_scope', '~> 0.5.1'
 
+# Generating diffs
+gem 'diffy', '~> 3.0.7'
+
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0',          group: :doc
 

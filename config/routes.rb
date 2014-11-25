@@ -15,8 +15,11 @@ Rails.application.routes.draw do
       end
       resources :links
       resources :backlinks
+      get '/diff', to: 'diff#revision_diff'
     end
   end
+
+  get '/diff', to: 'diff#generic_diff'
 
   get 's/:space_name', to: 'short_links#show_space', as: 'short_space'
   get 's/:space_name/:tiddler_title', to: 'short_links#show_space_tiddler', as: 'short_space_tiddler'

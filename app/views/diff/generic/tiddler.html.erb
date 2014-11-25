@@ -1,0 +1,57 @@
+<% content_for :title do %>
+  Tiddler Comparison - Federacy
+<% end %>
+
+<main>
+  <header>
+    <h1>Changes from <%= link_to(@diff.old.title, params[:old]) %> to <%= link_to(@diff.new.title, params[:new]) %></h1>
+  </header>
+
+  <article class="tiddler">
+    <section>
+      <h2><%= @diff.html["title"].html_safe %></h2>
+      <% if @diff.old.binary? || @diff.new.binary? %>
+        <div class="diff">
+          <ul>
+            <li class="del"><span><del>
+              <%= render_tiddler @diff.old, content_type: @diff.old.content_type %>
+            </del></span></li>
+            <li class="ins"><span><ins>
+              <%= render_tiddler @diff.new, content_type: @diff.new.content_type %>
+            </ins></span></li>
+          </ul>
+        </div>
+      <% else %>
+        <%= @diff.html["text"].html_safe %>
+      <% end %>
+    </section>
+
+    <footer>
+      <dl>
+        <dt>Created</dt>
+        <dd><%= @diff.html["created"].html_safe %></dd>
+        <dt>User ID</dt>
+        <dd><%= @diff.html["user_id"].html_safe %></dd>
+        <% if @diff.html["tags"] %>
+          <dt>Tags</dt>
+          <dd><%= @diff.html["tags"].html_safe %></dd>
+        <% end %>
+        <dt>Content Type</dt>
+        <dd><%= @diff.html["content_type"].html_safe %></dd>
+        <% if @diff.html["fields"] %>
+          <dt>Fields</dt>
+          <dd>
+            <dl class="fields">
+              <% @diff.html["fields"].each do |field, value| %>
+                <dt><%= field %></dt>
+                <dd><%= value.html_safe %></dd>
+              <% end %>
+            </dl>
+          </dd>
+        <% end %>
+      </dl>
+    </footer>
+  </article>
+</main>
+
+
