@@ -1,4 +1,5 @@
 require_dependency 'links/builder'
+require_dependency 'revision_builder'
 
 class RevisionsController < ApplicationController
   include Filterable
@@ -33,7 +34,7 @@ class RevisionsController < ApplicationController
     rescue ActiveRecord::RecordNotFound
       return unprocessable_entity
     end
-    @tiddler.new_revision_from_previous link_builder, @revision.id, "current_user" => current_user
+    revision_builder.from_previous @revision.id
 
     respond_with do |format|
       if @tiddler.save
@@ -73,5 +74,9 @@ class RevisionsController < ApplicationController
 
   def link_builder
     Links::Builder.new(root_url, @space, current_user, @tiddler.current_revision)
+  end
+
+  def revision_builder
+    RevisionBuilder.new(@tiddler, current_user, link_builder)
   end
 end

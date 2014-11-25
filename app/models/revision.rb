@@ -73,20 +73,6 @@ class Revision < ActiveRecord::Base
     @fields ||= Hash[revision_fields.pluck(:key, :value)]
   end
 
-  def add_tags new_tags
-    unless new_tags.respond_to? :each
-      new_tags = TagList.from_s new_tags
-    end
-
-    new_tags.each {|name| revision_tags.build name: name }
-    new_tags
-  end
-
-  def add_fields new_fields
-    new_fields.each {|k, v| revision_fields.build key: k, value: v }
-    new_fields
-  end
-
   def links
     revision_links
   end
