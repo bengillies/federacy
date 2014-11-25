@@ -9,7 +9,12 @@
 <main>
   <header>
     <h1>Comparison of <%= @tiddler.title %> revisions</h1>
-    <p>Changes from revision <%= @diff.old.id %> to revision <%= @diff.new.id %></p>
+    <p>
+      Changes from
+      <%= link_to("revision #{@diff.old.id}", space_tiddler_revision_path(@space, @tiddler, @diff.old)) %>
+      to
+      <%= link_to("revision #{@diff.new.id}", space_tiddler_revision_path(@space, @tiddler, @diff.new)) %>
+    </p>
   </header>
   <article class="tiddler">
     <header>
