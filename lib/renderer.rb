@@ -33,6 +33,7 @@ class Renderer
       space: @space,
       tokens: @tokens,
       tiddler: tiddler,
+      include_revision: revision?(tiddler),
       with_toc_data: true
     )
   end
@@ -51,9 +52,18 @@ class Renderer
     )
   end
 
+  def transclude text, tiddler=nil
+    @transcluder.transclude(
+      text: text,
+      links: @markdown_html.transclusions,
+      tokens: @tokens,
+      include_revision: revision?(tiddler)
+    )
+  end
+
   def markdown text, tiddler=nil
     text = markdown_renderer(@space, tiddler).render(text)
-    @transcluder.transclude(text, @markdown_html.transclusions, @tokens).html_safe
+    transclude(text, tiddler).html_safe
   end
 
   def render_tiddler tiddler, options
@@ -81,6 +91,10 @@ class Renderer
     else
       @view.render "shared/renderers/#{render_type}.html.erb", object: tiddler
     end
+  end
+
+  def revision? tiddler
+    tiddler.class == Revision
   end
 
 end

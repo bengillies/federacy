@@ -46,7 +46,7 @@ class DiffController < ApplicationController
 
   # find the requested tiddlers/spaces for diffing
   def find_from_url
-    resolver = Links::Resolver.new(root_url, current_user)
+    resolver = Links::Resolver.new(root_url: root_url, user: current_user)
     old = resolver.extract_link_info(link: diff_params[:old])
     new = resolver.extract_link_info(link: diff_params[:new])
     type = :tiddler

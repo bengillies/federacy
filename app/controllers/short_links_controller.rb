@@ -52,7 +52,7 @@ class ShortLinksController < ApplicationController
   private
 
   def link_resolver
-    @link_resolver ||= Links::Resolver.new(root_url, current_user)
+    @link_resolver ||= Links::Resolver.new(root_url: root_url, user: current_user)
   end
 
   def new_space

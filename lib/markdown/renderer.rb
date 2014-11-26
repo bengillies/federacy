@@ -8,7 +8,7 @@ module Markdown
     LINK_MAPPINGS = {
       "tiddlylink"   =>   '[%{title}](%{link})',
       "tiddlyimage"  =>  '![%{title}](%{link})',
-      "transclusion" => "\n%{start}\n\n[%{title}](%{link})\n\n%{end}\n",
+      "transclusion" => "\n%{start}\n\n[%{title}](%{link})\n\n%{end}\n\n",
     }
 
     def initialize render_opts
@@ -16,6 +16,7 @@ module Markdown
       @tokens = render_opts[:tokens]
       @tiddler = render_opts[:tiddler]
       @links = render_opts[:tiddler] && render_opts[:tiddler].links
+      @include_revision = render_opts[:include_revision]
       super
     end
 
@@ -72,7 +73,7 @@ module Markdown
       new_link = "/spaces/#{link[:space_id]}"
       if link[:tiddler_id]
         new_link += "/tiddlers/#{link[:tiddler_id]}"
-        if @tiddler && @tiddler.class == Revision
+        if @tiddler && @include_revision
           new_link += "/revisions/#{link[:target_id]}"
         end
       elsif link[:tiddler_title]

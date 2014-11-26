@@ -1,5 +1,6 @@
 module Links
 
+  class RevisionNotFound < StandardError; end
   class TiddlerNotFound < StandardError; end
   class SpaceNotFound < StandardError; end
   class UserNotFound < StandardError; end
@@ -7,10 +8,11 @@ module Links
   class Resolver
     attr_reader :user, :found_space
 
-    def initialize root_url, user, space=nil
-      @root_url = root_url
-      @current_user = user
-      @space = space
+    def initialize opts
+      @root_url = opts[:root_url]
+      @current_user = opts[:user]
+      @space = opts[:space] || nil
+      @include_revision = opts[:include_revision] || false
     end
 
     # is the given string a tiddler, or a link
@@ -53,13 +55,15 @@ module Links
     end
 
     def resolve link
-      if link[:space_name]
+      if link[:space_id]
+        @found_space = space = resolve_space_by_id(link[:space_id])
+      elsif link[:space_name]
         @found_space = space = resolve_space_by_name(link[:space_name])
         unless space
           raise SpaceNotFound
         end
       else
-        @found_space = space = resolve_space_by_id(link[:space_id] || @space.id)
+        @found_space = space = resolve_space_by_id(@space.id)
       end
 
       if link[:user_name]
@@ -70,11 +74,16 @@ module Links
       end
       space = visible_to_users(space, @user)
 
-      if space && (link[:tiddler_title])
-        tiddler = resolve_tiddler(space, link[:tiddler_title])
+      if space && (link[:tiddler_title] || link[:tiddler_id])
+        tiddler = resolve_tiddler(space, link)
 
         unless tiddler
           raise TiddlerNotFound
+        end
+
+        if @include_revision
+          revision = resolve_revision(tiddler, link)
+          return [space, tiddler, revision]
         end
 
         return [space, tiddler]
@@ -106,8 +115,21 @@ module Links
       space
     end
 
-    def resolve_tiddler space, tiddler_title
-      space.tiddlers.by_title(tiddler_title).first
+    def resolve_tiddler space, link
+      begin
+        return space.tiddlers.find(link[:tiddler_id]) if link[:tiddler_id]
+        space.tiddlers.by_title(link[:tiddler_title]).first
+      rescue ActiveRecord::RecordNotFound
+        raise TiddlerNotFound
+      end
+    end
+
+    def resolve_revision tiddler, link
+      begin
+        tiddler.revisions.find(link[:target_id])
+      rescue ActiveRecord::RecordNotFound
+        raise RevisionNotFound
+      end
     end
 
   end

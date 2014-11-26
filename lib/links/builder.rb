@@ -45,7 +45,8 @@ module Links
 
     # turn an extracted link into a link to an actual tiddler/space
     def to_revision_link link
-      resolver = Links::Resolver.new(@root_url, @current_user, @space)
+      resolver = Links::Resolver.new(root_url: @root_url,
+        user: @current_user, space: @space)
       unless link[:link]
         begin
           if link[:tiddler_title]
